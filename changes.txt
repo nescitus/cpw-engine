@@ -1,0 +1,9 @@
+v. 1.1, December 2014
+
+- late move reduction
+- static eval pruning
+- more strict conditions on futility pruning
+- new king safety eval
+- interpolation between mg/eg scores (piece/square tables, mobility)
+- removed some dubious stuff
+- many more comments in search and eval
