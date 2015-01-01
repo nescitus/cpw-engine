@@ -1,6 +1,6 @@
 
 /* row identifiers */
- 
+
 #define ROW_1   ( A1 >> 4 )
 #define ROW_2   ( A2 >> 4 )
 #define ROW_3   ( A3 >> 4 )
@@ -9,9 +9,9 @@
 #define ROW_6   ( A6 >> 4 )
 #define ROW_7   ( A7 >> 4 )
 #define ROW_8   ( A8 >> 4 )
- 
+
 /* column identifiers */
- 
+
 #define COL_A  ( A1 & 7 )
 #define COL_B  ( B1 & 7 )
 #define COL_C  ( C1 & 7 )
@@ -20,9 +20,9 @@
 #define COL_F  ( F1 & 7 )
 #define COL_G  ( G1 & 7 )
 #define COL_H  ( H1 & 7 )
- 
+
 /* vectors */
- 
+
 #define NORTH  16
 #define NN    ( NORTH + NORTH )
 #define SOUTH  -16
@@ -42,7 +42,7 @@
 
 /* get board column that a square is part of */
 #define COL(sq)  ( (sq) & 7 )
- 
+
 /* get board row that a square is part of */
 #define ROW(sq)  ( (sq) >> 4 )
 

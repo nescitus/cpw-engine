@@ -1,20 +1,20 @@
 
 struct szobrist {
-	U64 piecesquare[6][2][128];
-	U64 color;
-	U64 castling[16];
-	U64 ep[128];
+    U64 piecesquare[6][2][128];
+    U64 color;
+    U64 castling[16];
+    U64 ep[128];
 } extern zobrist;
 
 enum ettflag {
-	TT_EXACT,
-	TT_ALPHA,
-	TT_BETA
+    TT_EXACT,
+    TT_ALPHA,
+    TT_BETA
 };
 
 struct stt_entry {
     U64  hash;
-	int  val;
+    int  val;
     U8	 depth;
     U8   flags;
     U8   bestmove;
@@ -22,12 +22,12 @@ struct stt_entry {
 
 struct spawntt_entry {
     U64  hash;
-	int  val;
+    int  val;
 } extern * ptt;
 
 struct sevaltt_entry {
     U64 hash;
-	int val;
+    int val;
 } extern * ett;
 
 extern int tt_size;

@@ -11,8 +11,8 @@ int tt_setsize(int size);
 
 
 enum etask {
-	TASK_NOTHING,
-	TASK_SEARCH
+    TASK_NOTHING,
+    TASK_SEARCH
 } extern task;
 
 
@@ -20,24 +20,24 @@ void time_uci_go(char * command);
 
 int main() {
     com_init();
-	setDefaultEval();
-	tt_init();
-	tt_setsize(0x4000000);     //64m
-	ttpawn_setsize(0x1000000); //16m
-	tteval_setsize(0x2000000); //32m
-	initBook();
+    setDefaultEval();
+    tt_init();
+    tt_setsize(0x4000000);     //64m
+    ttpawn_setsize(0x1000000); //16m
+    tteval_setsize(0x2000000); //32m
+    initBook();
 
-	board_loadFromFen(STARTFEN);
+    board_loadFromFen(STARTFEN);
 
-	for(;;) {
- 
+    for(;;) {
+
         if (task == TASK_NOTHING) {
             com();
         } else {
             search_run();
-			task = TASK_NOTHING;
+            task = TASK_NOTHING;
         }
- 
+
     }
 
 }

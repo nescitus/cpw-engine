@@ -3,8 +3,8 @@
 *           created by some members of Chessprogramming Wiki         *
 *                                                                    *
 * search.h  -  this file names functions coded within search.cpp.    *
-* Outside that file they are represented by the interface function   * 
-* called search_run().                                               * 
+* Outside that file they are represented by the interface function   *
+* called search_run().                                               *
 *********************************************************************/
 
 void search_iterate();
