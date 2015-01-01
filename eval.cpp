@@ -51,29 +51,26 @@ int eval( int alpha, int beta, int use_hash ) {
     if (probeval != INVALID && use_hash)
         return probeval;
 
-    /***********************************************************
-    /  Clear all eval data                                     /
-    ***********************************************************/
+    /**************************************************************************
+    *  Clear all eval data                                                    *
+    **************************************************************************/
 
     v.gamePhase = 0;
-    v.mgMob[WHITE] = 0;
-    v.mgMob[BLACK] = 0;
-    v.egMob[WHITE] = 0;
-    v.egMob[BLACK] = 0;
-    v.attCnt[WHITE] = 0;
-    v.attCnt[BLACK] = 0;
-    v.attWeight[WHITE] = 0;
-    v.attWeight[BLACK] = 0;
-    v.MaterialAdjustement[WHITE] = 0;
-    v.MaterialAdjustement[BLACK] = 0;
-    v.Blockages[WHITE] = 0;
-    v.Blockages[BLACK] = 0;
-    v.PositionalThemes[WHITE] = 0;
-    v.PositionalThemes[BLACK] = 0;
-    v.kingShield[WHITE] = 0;
-    v.kingShield[BLACK] = 0;
+	for (int side = 0; side <= 1; side++) {
+		v.mgMob[side] = 0;
+		v.egMob[side] = 0;
+		v.attCnt[side] = 0;
+		v.attWeight[side] = 0;
+		v.MaterialAdjustement[side] = 0;
+		v.Blockages[side] = 0;
+		v.PositionalThemes[side] = 0;
+		v.kingShield[side] = 0;
+	}
 
-    /* sum the incrementally counted material and pcsq values */
+    /************************************************************************** 
+	*  Sum the incrementally counted material and piece/square table values   *
+	**************************************************************************/
+
     mgScore = b.PieceMaterial[WHITE] + b.PawnMaterial[WHITE] + b.PcsqMg[WHITE]
               - b.PieceMaterial[BLACK] - b.PawnMaterial[BLACK] - b.PcsqMg[BLACK];
     egScore = b.PieceMaterial[WHITE] + b.PawnMaterial[WHITE] + b.PcsqEg[WHITE]
@@ -90,13 +87,13 @@ int eval( int alpha, int beta, int use_hash ) {
     if ( b.stm == WHITE ) result += e.TEMPO;
     else				  result -= e.TEMPO;
 
-    /*******************************************************************
-    * Adjusting material value for the various combinations of pieces. *
-    * Currently it scores bishop, knight and rook pairs. The first one *
-    * gets a bonus, the latter two - a penalty. Please also note that  *
-    * adjustements of knight and rook value based on the number of own *
-    * pawns on the board are done within the piece-specific routines.  *
-    *******************************************************************/
+    /**************************************************************************
+    *  Adjusting material value for the various combinations of pieces.       *
+    *  Currently it scores bishop, knight and rook pairs. The first one       *
+    *  gets a bonus, the latter two - a penalty. Please also note that        *
+    *  adjustements of knight and rook value based on the number of own       *
+    *  pawns on the board are done within the piece-specific routines.        *
+    **************************************************************************/
 
     if ( b.PieceCount[WHITE][BISHOP] > 1 ) result += e.BISHOP_PAIR;
     if ( b.PieceCount[BLACK][BISHOP] > 1 ) result -= e.BISHOP_PAIR;
@@ -107,9 +104,9 @@ int eval( int alpha, int beta, int use_hash ) {
 
     result += getPawnScore();
 
-    /*******************************************************************
-    *  Evaluate pieces                                                 *
-    *******************************************************************/
+    /**************************************************************************
+    *  Evaluate pieces                                                        *
+    **************************************************************************/
 
     for (U8 row=0; row < 8; row++)
         for (U8 col=0; col < 8; col++) {
@@ -138,12 +135,11 @@ int eval( int alpha, int beta, int use_hash ) {
             }
         }
 
-    /********************************************************************
-    *  Merge midgame and endgame score. We interpolate between these    *
-    *  two values, using a gamePhase value, based on remaining piece    *
-    *  material on both sides. With less pieces, endgame score beco-    *
-    *  mes more influential.                                            *
-    ********************************************************************/
+    /**************************************************************************
+    *  Merge  midgame  and endgame score. We interpolate between  these  two  *
+    *  values, using a gamePhase value, based on remaining piece material on  *
+	*  both sides. With less pieces, endgame score becomes more influential.  *
+    **************************************************************************/
 
     mgScore += (v.mgMob[WHITE] - v.mgMob[BLACK]);
     egScore += (v.egMob[WHITE] - v.egMob[BLACK]);
@@ -152,35 +148,35 @@ int eval( int alpha, int beta, int use_hash ) {
     int egWeight = 24 - mgWeight;
     result += ( (mgScore * mgWeight) + (egScore * egWeight) ) / 24;
 
-    /********************************************************************
-    *  Add phase-independent score components.                          *
-    ********************************************************************/
+    /**************************************************************************
+    *  Add phase-independent score components.                                *
+    **************************************************************************/
 
     result += (v.Blockages[WHITE] - v.Blockages[BLACK]);
     result += (v.PositionalThemes[WHITE] - v.PositionalThemes[BLACK]);
     result += (v.MaterialAdjustement[WHITE] - v.MaterialAdjustement[BLACK]);
 
-    /********************************************************************
-     *  Merge king attack score. We don't apply this value if there are *
-    *  less than two attackers or if the attacker has no queen.        *
-     *******************************************************************/
+    /**************************************************************************
+    *  Merge king attack score. We don't apply this value if there are less   *
+    *  than two attackers or if the attacker has no queen.                    *
+    **************************************************************************/
 
     if (v.attCnt[WHITE] < 2 || b.PieceCount[WHITE][QUEEN] == 0) v.attWeight[WHITE] = 0;
     if (v.attCnt[BLACK] < 2 || b.PieceCount[BLACK][QUEEN] == 0) v.attWeight[BLACK] = 0;
     result += SafetyTable[v.attWeight[WHITE]];
     result -= SafetyTable[v.attWeight[BLACK]];
 
-    /********************************************************************
-    *  Low material correction - guarding against an illusory material  *
-    *  advantage. Full blown program should have more such rules,  but  *
-    *  the current set ought to be useful enough. Please note that our  *
-    *  code  assumes different material values for bishop and  knight.  *
-    *                                                                   *
-    *  - a single minor piece cannot win                                *
-    *  - two knights cannot checkmate bare king                         *
-    *  - bare rook vs minor piece is drawish                            *
-    *  - rook and minor vs rook is drawish                              *
-    ********************************************************************/
+    /**************************************************************************
+    *  Low material correction - guarding against an illusory material advan- *
+    *  tage. Full blown program should have more such rules, but the current  *
+    *  set ought to be useful enough. Please note that our code  assumes      *
+	*  different material values for bishop and  knight.                      *
+    *                                                                         *
+    *  - a single minor piece cannot win                                      *
+    *  - two knights cannot checkmate bare king                               *
+    *  - bare rook vs minor piece is drawish                                  *
+    *  - rook and minor vs rook is drawish                                    *
+    **************************************************************************/
 
     if (result > 0) {
         stronger = WHITE;
@@ -212,9 +208,9 @@ int eval( int alpha, int beta, int use_hash ) {
                 && b.PieceMaterial[stronger] == e.PIECE_VALUE[ROOK]) result /= 2;
     }
 
-    /*******************************************************************
-    *  Finally return the score relative to the side to move.          *
-    *******************************************************************/
+    /**************************************************************************
+    *  Finally return the score relative to the side to move.                 *
+    **************************************************************************/
 
     if ( b.stm == BLACK ) result = -result;
 
@@ -269,18 +265,18 @@ void EvalKnight(S8 sq, S8 side) {
         }
     }
 
-    /***************************************************************
-    *  Material value adjustement based on the no. of own pawns.   *
-    *  Knights lose value as pawns disappear.                      *
-    ***************************************************************/
+    /**************************************************************************
+    *  Material value adjustement based on the no. of own pawns.              *
+    *  Knights lose value as pawns disappear.                                 *
+    **************************************************************************/
 
     v.MaterialAdjustement[side] += knight_adj[b.PieceCount[side][PAWN]];
 
-    /****************************************************************
-    *  Collect data about mobility and king attacks. This resembles *
-    *  move generation code, except that we are just incrementing   *
-    *  the counters instead of adding actual moves.                 *
-    ****************************************************************/
+    /**************************************************************************
+    *  Collect data about mobility and king attacks. This resembles move      *
+    *  generation code, except that we are just incrementing the counters     *
+    *  instead of adding actual moves.                                        *
+    **************************************************************************/
 
     for (U8 dir=0; dir<8; dir++) {
         pos = sq + vector[KNIGHT][dir];
@@ -291,18 +287,17 @@ void EvalKnight(S8 sq, S8 side) {
         }
     }
 
-    /****************************************************************
-    *  Evaluate mobility. We try to do it in such a way             *
-    *  that  zero represents average mobility, but  our             *
-    *  formula of doing so is a puer guess.                         *
-    ****************************************************************/
+    /**************************************************************************
+    *  Evaluate mobility. We try to do it in such a way that zero represents  *
+	*  average mobility, but  our formula of doing so is a puer guess.        *
+    **************************************************************************/
 
     v.mgMob[side] += 4 * (mob-4);
     v.egMob[side] += 4 * (mob-4);
 
-    /****************************************************************
-    *  Save data about king attacks                                 *
-    ****************************************************************/
+    /**************************************************************************
+    *  Save data about king attacks                                           *
+    **************************************************************************/
 
     if (att) {
         v.attCnt[side]++;
@@ -372,9 +367,9 @@ void EvalBishop(S8 sq, S8 side) {
         }
     }
 
-    /****************************************************************
-    *  Collect data about mobility and king attacks                 *
-    ****************************************************************/
+    /**************************************************************************
+    *  Collect data about mobility and king attacks                           *
+    **************************************************************************/
 
     for (char dir=0; dir<vectors[BISHOP]; dir++) {
 
@@ -420,18 +415,17 @@ void EvalRook(S8 sq, S8 side) {
 
     v.gamePhase += 2;
 
-    /***************************************************************
-    *  Material value adjustement based on the no. of own pawns.   *
-    *  Rooks gain value as pawns disappear.                        *
-    ***************************************************************/
+    /**************************************************************************
+    *  Material value adjustement based on the no. of own pawns.              *
+    *  Rooks gain value as pawns disappear.                                   *
+    **************************************************************************/
 
     v.MaterialAdjustement[side] += rook_adj[b.PieceCount[side][PAWN]];
 
-    /***************************************************************
-    *  This is an ugly hack to detect open files. Merging it with  *
-    *  mobility  eval would have been better, but less  readable,  *
-    *  and this is educational program fter all.                   *
-    /**************************************************************/
+    /**************************************************************************
+    *  An ugly hack to detect open files. Merging it with mobility eval would *
+    *  have been better, but less readable                                    *
+    /*************************************************************************/
 
     if (side == WHITE) stepFwd = NORTH;
     else stepFwd = SOUTH;
@@ -449,10 +443,9 @@ void EvalRook(S8 sq, S8 side) {
         nextSq += stepFwd;
     }
 
-    /****************************************************************
-    *  Evaluate open and half-open files. We merge this bonus with  *
-    *  mobility  score.                                             *
-    /***************************************************************/
+    /**************************************************************************
+    *  Bonus for open and half-open filesis merged with mobility score        *
+    /*************************************************************************/
 
     if ( !ownBlockingPawns ) {
 
@@ -465,9 +458,9 @@ void EvalRook(S8 sq, S8 side) {
         }
     }
 
-    /****************************************************************
-    *  Collect data about mobility and king attacks                 *
-    ****************************************************************/
+    /**************************************************************************
+    *  Collect data about mobility and king attacks                           *
+    **************************************************************************/
 
     for (char dir=0; dir<vectors[ROOK]; dir++) {
 
@@ -507,9 +500,9 @@ void EvalQueen(S8 sq, S8 side) {
     int att = 0;
     int mob = 0;
 
-    /****************************************************************
-    *  A queen should not be developed too early                    *
-    ****************************************************************/
+    /**************************************************************************
+    *  A queen should not be developed too early                              *
+    **************************************************************************/
 
     if (side == WHITE && ROW(sq) > ROW_2) {
         if (isPiece(WHITE, KNIGHT, B1)) v.PositionalThemes[WHITE] -= 2;
@@ -525,9 +518,9 @@ void EvalQueen(S8 sq, S8 side) {
         if (isPiece(BLACK, KNIGHT, G8)) v.PositionalThemes[BLACK] -= 2;
     }
 
-    /****************************************************************
-    *  Collect data about mobility and king attacks                 *
-    ****************************************************************/
+    /**************************************************************************
+    *  Collect data about mobility and king attacks                           *
+    **************************************************************************/
 
     for (char dir=0; dir<vectors[QUEEN]; dir++) {
 
@@ -681,12 +674,12 @@ int EvalPawn(S8 sq, S8 side) {
     else stepBck = NORTH;
     S8 nextSq = sq + stepFwd;
 
-    /*************************************************************************
-    *   We have only very basic data structures that do not update informa-  *
-    *   tion about pawns incrementally, so we have to calculate everything   *
-    *   here.  The loop below detects doubled pawns, passed pawns and sets   *
-    *   a flag on finding that our pawn is opposed by enemy pawn.            *
-    *************************************************************************/
+    /**************************************************************************
+    *   We have only very basic data structures that do not update informa-   *
+    *   tion about pawns incrementally, so we have to calculate everything    *
+    *   here.  The loop below detects doubled pawns, passed pawns and sets    *
+    *   a flag on finding that our pawn is opposed by enemy pawn.             *
+    **************************************************************************/
 
     while (IS_SQ(nextSq)) {
 
@@ -707,10 +700,10 @@ int EvalPawn(S8 sq, S8 side) {
         nextSq += stepFwd;
     }
 
-    /*************************************************************************
-    *   Another loop, going backwards and checking whether pawn has support. *
-    *   Here we can at least break out of it for speed optimization.         *
-    *************************************************************************/
+    /**************************************************************************
+    *   Another loop, going backwards and checking whether pawn has support.  *
+    *   Here we can at least break out of it for speed optimization.          *
+    **************************************************************************/
 
     nextSq = sq;
     while (IS_SQ(nextSq)) {
@@ -728,20 +721,20 @@ int EvalPawn(S8 sq, S8 side) {
         nextSq += stepBck;
     }
 
-    /*************************************************************************
-    *  Evaluate passed pawns, scoring them higher if they are protected      *
-    *  or if their advance is supported by friendly pawns                    *
-    *************************************************************************/
+    /**************************************************************************
+    *  Evaluate passed pawns, scoring them higher if they are protected       *
+    *  or if their advance is supported by friendly pawns                     *
+    **************************************************************************/
 
     if ( flagIsPassed ) {
         if ( isPawnSupported(sq, side) ) result += e.protected_passer[side][sq];
         else							 result += e.passed_pawn[side][sq];
     }
 
-    /*************************************************************************
-    *  Evaluate weak pawns, increasing the penalty if they are situated      *
-    *  on a half-open file                                                   *
-    *************************************************************************/
+    /**************************************************************************
+    *  Evaluate weak pawns, increasing the penalty if they are situated       *
+    *  on a half-open file                                                    *
+    **************************************************************************/
 
     if ( flagIsWeak ) {
         result += e.weak_pawn[side][sq];
@@ -807,9 +800,9 @@ int isPiece(U8 color, U8 piece, S8 sq) {
     return ( (b.pieces[sq] == piece) && (b.color[sq] == color) );
 }
 
-/***************************************************************************************
-*                             Printing eval results                                    *
-***************************************************************************************/
+/******************************************************************************
+*                             Printing eval results                           *
+******************************************************************************/
 
 void printEval() {
     printf("------------------------------------------\n");
