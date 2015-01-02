@@ -253,8 +253,24 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
 
     if ( ( val = tt_probe(depth, alpha, beta, &tt_move) ) != INVALID ) {
         // in pv nodes we return only in case of an exact hash hit
-        if (!is_pv || (val > alpha && val < beta))
-            return val;
+		if (!is_pv || (val > alpha && val < beta)) {
+
+			/****************************************************************
+			*  Here we must be careful about checkmate scoring. "Mate in n" *
+			*  returned by transposition table means "mate in n if we start *
+			*  counting n right now". Yet search always returns mate scores *
+			*  as distance from root, so we must convert to that metric.    *
+			*  Other programs might hide similar code within tt_probe() and *
+			*  tt_save() functions.                                         *
+			****************************************************************/
+
+			if (abs(val) > INF - 100) {
+				if (val > 0) val -= ply;
+				else         val += ply;
+			}
+
+			return val;
+		}
     }
 
     /************************************************************************
@@ -262,9 +278,9 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
     ************************************************************************/
 
     if (depth < 3
-            && (!is_pv)
-            && (!flagInCheck)
-            && (abs(beta - 1) > -INF+100))
+    && (!is_pv)
+    && (!flagInCheck)
+    && (abs(beta - 1) > -INF+100))
     {
         int static_eval = eval(alpha, beta, 1);
 
@@ -283,11 +299,11 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
     ************************************************************************/
 
     if ( ( depth > 2)
-            &&	 ( can_null )
-            &&   (!is_pv)
-            &&	 ( eval(alpha, beta, 1) > beta )
-            &&	 ( b.PieceMaterial[b.stm] > e.ENDGAME_MAT )
-            &&	 ( !flagInCheck )  )
+    &&   ( can_null )
+    &&   (!is_pv)
+    &&   ( eval(alpha, beta, 1) > beta )
+    &&   ( b.PieceMaterial[b.stm] > e.ENDGAME_MAT )
+    &&   ( !flagInCheck )  )
     {
         char ep_old = b.ep;
         move_makeNull();
@@ -318,10 +334,10 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
     int fmargin[4] = {0, 200, 300, 500};
 
     if ( depth <= 3
-            &&	 !is_pv
-            &&	 !flagInCheck
-            &&	 abs(alpha) < 9000
-            &&	 eval(alpha,beta, 1) + fmargin[depth] <= alpha )
+    &&  !is_pv
+    &&  !flagInCheck
+    &&   abs(alpha) < 9000
+    &&   eval(alpha,beta, 1) + fmargin[depth] <= alpha )
         f_prune = 1;
 
     /* generate moves */
@@ -379,15 +395,15 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         ********************************************************************/
 
         if (!is_pv
-                && new_depth > 3
-                && legal_move
-                && moves_tried > 3
-                && !isAttacked(!b.stm, b.KingLoc[b.stm])
-                && !flagInCheck
-                && (move.from != sd.killers[0][ply].from || move.to != sd.killers[0][ply].to)
-                && (move.from != sd.killers[1][ply].from || move.to != sd.killers[1][ply].to)
-                && !move_iscapt(move)
-                && !move_isprom(move) ) {
+        && new_depth > 3
+        && legal_move
+        && moves_tried > 3
+        && !isAttacked(!b.stm, b.KingLoc[b.stm])
+        && !flagInCheck
+        && (move.from != sd.killers[0][ply].from || move.to != sd.killers[0][ply].to)
+        && (move.from != sd.killers[1][ply].from || move.to != sd.killers[1][ply].to)
+        && !move_iscapt(move)
+        && !move_isprom(move) ) {
 
             /****************************************************************
             * Real programs tend use more advanced formulas to calculate    *
@@ -475,7 +491,7 @@ re_search:
                 *************************************************************/
 
                 if (!move_iscapt(move)
-                        && !move_isprom(move)) {
+                && !move_isprom(move)) {
                     setKillers(movelist[i], ply);
                     sd.history[move.from][move.to] += depth*depth;
 
