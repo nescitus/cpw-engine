@@ -48,9 +48,9 @@ int Quiesce( int alpha, int beta )  {
         *  issues and special endgame evaluation heuristics.             *
         *****************************************************************/
 
-        if ( ( stand_pat + e.PIECE_VALUE[ movelist[i].piece_cap ] + 200 < alpha ) &&
-                ( b.PieceMaterial[!b.stm] - e.PIECE_VALUE[movelist[i].piece_cap] > e.ENDGAME_MAT ) &&
-                ( !move_isprom(movelist[i]) ) )
+        if ( ( stand_pat + e.PIECE_VALUE[ movelist[i].piece_cap ] + 200 < alpha ) 
+		&&   ( b.PieceMaterial[!b.stm] - e.PIECE_VALUE[movelist[i].piece_cap] > e.ENDGAME_MAT ) 
+		&&   ( !move_isprom(movelist[i]) ) )
             continue;
 
         /*****************************************************************
@@ -104,24 +104,10 @@ int badCapture(smove move) {
     *   defender and (b) there is more than one attacker.                     *
     **************************************************************************/
 
-    if ( pawnRecapture(b.color[move.from], move.to) &&
-            e.PIECE_VALUE[move.piece_cap] + 200 - e.PIECE_VALUE[move.piece_from] < 0 )
+	if (b.pawn_ctrl[b.color[move.from]^1] [move.to]
+	&&   e.PIECE_VALUE[move.piece_cap] + 200 - e.PIECE_VALUE[move.piece_from] < 0 )
         return 1;
 
     /* if a capture is not processed, it cannot be considered bad */
-    return 0;
-}
-
-int pawnRecapture( U8 capturers_color, char sq) {
-
-    if (capturers_color == WHITE) {
-        if ( ( IS_SQ(sq+NW) && isPiece(BLACK, PAWN, sq+NW) ) ||
-                ( IS_SQ(sq+NE) && isPiece(BLACK, PAWN, sq+NE) ) )
-            return 1;
-    } else {
-        if ( ( IS_SQ(sq+SW) && isPiece(WHITE, PAWN, sq+SW) ) ||
-                ( IS_SQ(sq+SE) && isPiece(WHITE, PAWN, sq+SE) )  )
-            return 1;
-    }
     return 0;
 }

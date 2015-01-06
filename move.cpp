@@ -131,7 +131,7 @@ int move_make(smove move) {
         b.ep = -1;
     }
     if ( (move.piece_from == PAWN) && ( abs(move.from - move.to) == 32 ) &&
-            ( pawnRecapture( !b.stm, (move.from + move.to) / 2 ) )
+		(b.pawn_ctrl[b.stm] [(move.from + move.to) / 2])
        ) {
         b.ep = (move.from + move.to) / 2;
         b.hash ^= zobrist.ep[b.ep];

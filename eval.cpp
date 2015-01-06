@@ -444,7 +444,7 @@ void EvalRook(S8 sq, S8 side) {
     }
 
     /**************************************************************************
-    *  Bonus for open and half-open filesis merged with mobility score        *
+    *  Bonus for open and half-open files is merged with mobility score       *
     /*************************************************************************/
 
     if ( !ownBlockingPawns ) {
@@ -666,13 +666,19 @@ int EvalPawn(S8 sq, S8 side) {
     int flagIsPassed = 1; // we will be trying to disprove that
     int flagIsWeak = 1;   // we will be trying to disprove that
     int flagIsOpposed = 0;
-
     int stepFwd, stepBck;
-    if (side == WHITE) stepFwd = NORTH;
-    else stepFwd = SOUTH;
-    if (side == WHITE) stepBck = SOUTH;
-    else stepBck = NORTH;
-    S8 nextSq = sq + stepFwd;
+	
+	/**************************************************************************
+	*   Set loop direction variables for color-independent eval.              *
+	**************************************************************************/
+
+	if (side == WHITE) {
+		stepFwd = NORTH;
+		stepBck = SOUTH;
+	} else {
+		stepFwd = SOUTH;
+		stepBck = NORTH;
+	}
 
     /**************************************************************************
     *   We have only very basic data structures that do not update informa-   *
@@ -680,6 +686,11 @@ int EvalPawn(S8 sq, S8 side) {
     *   here.  The loop below detects doubled pawns, passed pawns and sets    *
     *   a flag on finding that our pawn is opposed by enemy pawn.             *
     **************************************************************************/
+
+	if (b.pawn_ctrl[!side][sq]) // if a pawn is attacked by a pawn, it is not
+		flagIsPassed = 0;       // passed (not sure if it's the best decision)
+
+	S8 nextSq = sq + stepFwd;
 
     while (IS_SQ(nextSq)) {
 
@@ -691,11 +702,8 @@ int EvalPawn(S8 sq, S8 side) {
                 flagIsOpposed = 1;  // flag our pawn as opposed
         }
 
-        if (IS_SQ(nextSq + WEST) && isPiece(!side, PAWN, nextSq + WEST))
-            flagIsPassed = 0;
-
-        if (IS_SQ(nextSq + EAST) && isPiece(!side, PAWN, nextSq + EAST))
-            flagIsPassed = 0;
+		if (b.pawn_ctrl[!side][nextSq])
+			flagIsPassed = 0;
 
         nextSq += stepFwd;
     }
@@ -705,18 +713,14 @@ int EvalPawn(S8 sq, S8 side) {
     *   Here we can at least break out of it for speed optimization.          *
     **************************************************************************/
 
-    nextSq = sq;
+    nextSq = sq+stepFwd; // so that a pawn in a duo will not be considered weak
+
     while (IS_SQ(nextSq)) {
 
-        if (IS_SQ(nextSq + WEST) && isPiece(side, PAWN, nextSq + WEST)) {
-            flagIsWeak = 0;
-            break;
-        }
-
-        if (IS_SQ(nextSq + EAST) && isPiece(side, PAWN, nextSq + EAST)) {
-            flagIsWeak = 0;
-            break;
-        }
+		if (b.pawn_ctrl[side][nextSq]) {
+			flagIsWeak = 0;
+			break;
+		}
 
         nextSq += stepBck;
     }
@@ -748,7 +752,7 @@ int EvalPawn(S8 sq, S8 side) {
 int isPawnSupported(S8 sq, S8 side) {
     int step;
     if (side == WHITE) step = SOUTH;
-    else step = NORTH;
+    else               step = NORTH;
 
     if ( IS_SQ(sq+WEST) && isPiece(side,PAWN, sq + WEST) ) return 1;
     if ( IS_SQ(sq+EAST) && isPiece(side,PAWN, sq + EAST) ) return 1;

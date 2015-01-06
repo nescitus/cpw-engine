@@ -105,6 +105,7 @@ struct sboard {
     int PieceMaterial[2];
     int PawnMaterial[2];
     U8 PieceCount[2][6];
+	U8 pawn_ctrl[2][128];
 };
 extern sboard b;
 
@@ -281,7 +282,6 @@ void printEvalFactor(int wh, int bl);
 
 int Quiesce( int alpha, int beta );
 int badCapture(smove move);
-int pawnRecapture( U8 capturers_color, char sq);
 
 int isAttacked(char byColor, S8 sq);
 int leaperAttack( char byColor, S8 sq, char byPiece );

@@ -373,10 +373,10 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         ********************************************************************/
 
         if ( f_prune
-                &&	 legal_move
-                &&  !move_iscapt(move)
-                &&	!move_isprom(move)
-                &&  !isAttacked( !b.stm, b.KingLoc[b.stm] )  ) {
+        &&   legal_move
+        &&  !move_iscapt(move)
+        &&	!move_isprom(move)
+        &&  !isAttacked( !b.stm, b.KingLoc[b.stm] )  ) {
             move_unmake(move);
             continue;
         }
@@ -420,7 +420,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
             new_depth -= reduction_depth;
         }
 
-re_search:
+        re_search:
 
         /********************************************************************
         *  The code below introduces principal variation search. It  means  *
@@ -547,10 +547,9 @@ void setKillers(smove m, U8 ply) {
 
         /* make sure killer moves will be different
            before saving secondary killer move */
-        if ( m.from != sd.killers[ply][0].from ||
-                m.to   != sd.killers[ply][0].to
-           )
-            sd.killers[ply][1] = sd.killers[ply][0];
+        if ( m.from != sd.killers[ply][0].from 
+		||   m.to   != sd.killers[ply][0].to )
+             sd.killers[ply][1] = sd.killers[ply][0];
 
         /* save primary killer move */
         sd.killers[ply][0] = m;
@@ -561,14 +560,14 @@ void ReorderMoves(smove * m, U8 mcount, U8 ply) {
 
     for ( int j=0; j<mcount; j++ ) {
         if ( ( m[j].from == sd.killers[ply][1].from )
-                && 	 ( m[j].to   == sd.killers[ply][1].to   )
-                && 	 ( m[j].score < SORT_KILL-1 ) ) {
+        &&   ( m[j].to   == sd.killers[ply][1].to   )
+        &&   ( m[j].score < SORT_KILL-1 ) ) {
             m[j].score = SORT_KILL-1;
         }
 
         if ( ( m[j].from == sd.killers[ply][0].from )
-                &&   ( m[j].to   == sd.killers[ply][0].to   )
-                &&	 ( m[j].score < SORT_KILL ) ) {
+        &&   ( m[j].to   == sd.killers[ply][0].to   )
+        &&   ( m[j].score < SORT_KILL ) ) {
             m[j].score = SORT_KILL;
         }
     }

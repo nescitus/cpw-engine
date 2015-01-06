@@ -10,10 +10,14 @@ void clearBoard() {
 
     //reset b struct
 
-    for (int i=0; i<128; i++) {
-        b.pieces[i] = PIECE_EMPTY;
-        b.color[i] = COLOR_EMPTY;
+    for (int sq=0; sq<128; sq++) {
+        b.pieces[sq] = PIECE_EMPTY;
+        b.color[sq]  = COLOR_EMPTY;
+		for (int cl = 0; cl < 2; cl++) {
+			b.pawn_ctrl[cl][sq] = 0;
+		}
     }
+
     b.castle = 0;
     b.ep     = -1;
     b.ply    = 0;
@@ -65,6 +69,17 @@ void fillSq(U8 color, U8 piece, S8 sq) {
 
         // update pawn hashkey - please note conversion to a 32-bit integer
         b.phash ^= zobrist.piecesquare[piece][color][sq];
+
+		// update pawn control table
+		if (color == WHITE) {
+			if (IS_SQ(sq + NE)) b.pawn_ctrl[WHITE][sq + NE]++;
+			if (IS_SQ(sq + NW)) b.pawn_ctrl[WHITE][sq + NW]++;
+		}
+
+		if (color == BLACK) {
+			if (IS_SQ(sq + SE)) b.pawn_ctrl[BLACK][sq + SE]++;
+			if (IS_SQ(sq + SW)) b.pawn_ctrl[BLACK][sq + SW]++;
+		}
     }
     else {
         // update piece material
@@ -94,6 +109,18 @@ void clearSq(S8 sq) {
     b.hash ^= zobrist.piecesquare[piece][color][sq];
 
     if ( piece == PAWN ) {
+		// update pawn control table
+		if (color == WHITE) {
+			if (IS_SQ(sq + NE)) b.pawn_ctrl[WHITE][sq + NE]--;
+			if (IS_SQ(sq + NW)) b.pawn_ctrl[WHITE][sq + NW]--;
+		}
+
+		if (color == BLACK) {
+			if (IS_SQ(sq + SE)) b.pawn_ctrl[BLACK][sq + SE]--;
+			if (IS_SQ(sq + SW)) b.pawn_ctrl[BLACK][sq + SW]--;
+		}
+
+
         b.PawnMaterial[color] -= e.PIECE_VALUE[piece];
         b.phash ^= zobrist.piecesquare[piece][color][sq];
     }
@@ -284,4 +311,17 @@ void board_display() {
     }
 
     printf("\n   a b c d e f g h\n\n");
+
+	for (S8 row = 7; row >= 0; row--) {
+
+		printf("%d ", row + 1);
+
+		for (S8 col = 0; col<8; col++) {
+			sq = SET_SQ(row, col);
+			printf(" %2d", b.pawn_ctrl[WHITE][sq]);
+		}
+
+		printf("  %d\n", row + 1);
+
+	}
 }
