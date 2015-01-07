@@ -181,8 +181,7 @@ int eval( int alpha, int beta, int use_hash ) {
     if (result > 0) {
         stronger = WHITE;
         weaker = BLACK;
-    }
-    else		       {
+    } else {
         stronger = BLACK;
         weaker = WHITE;
     }
@@ -281,7 +280,8 @@ void EvalKnight(S8 sq, S8 side) {
     for (U8 dir=0; dir<8; dir++) {
         pos = sq + vector[KNIGHT][dir];
         if ( IS_SQ(pos) && b.color[pos] != side ) {
-            ++mob;
+			// we exclude mobility to squares controlled by enemy pawns
+            if (!b.pawn_ctrl[!side][pos]) ++mob;
             if ( e.sqNearK[!side] [b.KingLoc[!side] ] [pos] )
                 ++att; // this knight is attacking zone around enemy king
         }
@@ -379,7 +379,8 @@ void EvalBishop(S8 sq, S8 side) {
             if (! IS_SQ(pos)) break;
 
             if (b.pieces[pos] == PIECE_EMPTY) {
-                mob++;
+				if (!b.pawn_ctrl[!side][pos]) mob++;
+				// we exclude mobility to squares controlled by enemy pawns
                 if ( e.sqNearK[!side] [b.KingLoc[!side] ] [pos] ) ++att;
             }
             else if (b.color[pos] != side) {
