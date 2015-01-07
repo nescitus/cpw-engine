@@ -158,22 +158,20 @@ void movegen_pawn_move(S8 sq, bool promotion_only) {
 
         if (b.pieces[sq+NORTH] == PIECE_EMPTY) {
             movegen_push(sq, sq+NORTH, PAWN, PIECE_EMPTY, MFLAG_NORMAL);
-            if ( ( ROW(sq) == 1 ) &&
-                    ( b.pieces[sq+NN] == PIECE_EMPTY )
-               ) {
-                movegen_push(sq, sq+NN, PAWN, PIECE_EMPTY, MFLAG_EP);
-            }
+
+            if ( ( ROW(sq) == ROW_2 )  // white double pawn push
+            &&   ( b.pieces[sq+NN] == PIECE_EMPTY ) ) 
+                 movegen_push(sq, sq+NN, PAWN, PIECE_EMPTY, MFLAG_EP);   
         }
     } else {
         if (promotion_only && (ROW(sq) > 1)) return;
 
         if (b.pieces[sq+SOUTH] == PIECE_EMPTY) {
             movegen_push(sq, sq+SOUTH, PAWN, PIECE_EMPTY, MFLAG_NORMAL);
-            if ( ( ROW(sq) == 6 ) &&
-                    ( b.pieces[sq+SS] == PIECE_EMPTY )
-               ) {
-                movegen_push(sq, sq+SS, PAWN, PIECE_EMPTY, MFLAG_EP);
-            }
+            
+			if ( ( ROW(sq) == ROW_7 ) // black double pawn push
+            &&   ( b.pieces[sq+SS] == PIECE_EMPTY ) ) 
+                 movegen_push(sq, sq+SS, PAWN, PIECE_EMPTY, MFLAG_EP);
         }
     }
 }
@@ -196,7 +194,6 @@ void movegen_pawn_capt(S8 sq) {
     }
 }
 
-
 void movegen_push(char from, char to, U8 piece_from, U8 piece_cap, char flags) {
 
     m[movecount].from = from;
@@ -210,20 +207,30 @@ void movegen_push(char from, char to, U8 piece_from, U8 piece_cap, char flags) {
     m[movecount].ep = b.ep;
     m[movecount].id = movecount;
 
+	/**************************************************************************
+	* Quiet moves are sorted by history score.                                *
+	**************************************************************************/
+
     m[movecount].score = sd.history[from][to];
 
-    /* score for capture:
-    	Add the value of the captured piece and the id of the attacking piece.
-    	So that if two pieces can attack the same target, the one with the higher id (eg. Pawn=5) gets searched first.
-    */
+    /**************************************************************************
+	* Score for captures: add the value of the captured piece and the id      *
+	* of the attacking piece. If two pieces attack the same target, the one   *
+	* with the higher id (eg. Pawn=5) gets searched first. En passant gets    *
+	* the same score as pawn takes pawn.                                      *
+    **************************************************************************/
+
     if (piece_cap != PIECE_EMPTY)
         m[movecount].score = SORT_CAPT + e.SORT_VALUE[piece_cap] + piece_from;
 
-    //score for ep-capture
     if ((piece_from == PAWN) && (to == b.ep)) {
         m[movecount].score = SORT_CAPT + e.SORT_VALUE[PAWN] + 5;
         m[movecount].flags = MFLAG_EPCAPTURE;
     }
+
+	/**************************************************************************
+	* Put all four possible promotion moves on the list and score them.       *
+	**************************************************************************/
 
     if ((piece_from == PAWN) && ( (ROW(to)==0)||(ROW(to)==7) )) {
         m[movecount].flags |= MFLAG_PROMOTION;
@@ -238,7 +245,6 @@ void movegen_push(char from, char to, U8 piece_from, U8 piece_cap, char flags) {
     }
 
     movecount++;
-
 }
 
 void movegen_sort(U8 movecount, smove * m, U8 current) {

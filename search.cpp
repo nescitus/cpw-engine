@@ -177,7 +177,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
 
     int  val = -INF;
     char bestmove;
-    char tt_move = (char) -1;
+    char tt_move_index = (char) -1;
     char tt_flag = TT_ALPHA;
     int  flagInCheck;
     int  legal_move = 0;
@@ -187,11 +187,12 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
     int  moves_tried = 0;
     int  new_depth;
     int  mate_value = INF - ply; // will be used in mate distance pruning
-    smove move;
+	smove movelist[256];         // move list
+    smove move;                  // current move
 
     /**************************************************************************
     *  Probably later we will want to probe the transposition table. Here we  *
-	*  Tell  the  cpu to prepare for that event. This is just a minor  speed  *   
+	*  tell  the  cpu to prepare for that event. This is just a minor  speed  *   
 	*  optimization and program would run fine without that.                  *
     **************************************************************************/
 
@@ -250,7 +251,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
     *  to retrieve move without generating full move list instead.            *
     **************************************************************************/
 
-    if ( ( val = tt_probe(depth, alpha, beta, &tt_move) ) != INVALID ) {
+    if ( ( val = tt_probe(depth, alpha, beta, &tt_move_index) ) != INVALID ) {
         // in pv nodes we return only in case of an exact hash hit
 		if (!is_pv || (val > alpha && val < beta)) {
 
@@ -321,7 +322,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
 
         if ( time_over ) return 0;
         if (val >= beta) return beta;
-    }
+    }   // end of null move code
 
     /**************************************************************************
     *  Decide  if FUTILITY PRUNING  is  applicable. If we are not in check,   *
@@ -339,17 +340,16 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
     &&   eval(alpha,beta, 1) + fmargin[depth] <= alpha )
         f_prune = 1;
 
-    /* generate moves */
-
-    smove movelist[256];
-    U8 mcount = movegen( movelist, tt_move );
-
+	/**************************************************************************
+    *  Generate moves, then place special cases higher on the list            *
+	**************************************************************************/
+    
+    U8 mcount = movegen( movelist, tt_move_index );
     ReorderMoves( movelist, mcount, ply );
-
     bestmove = movelist[0].id;
 
     /**************************************************************************
-    *  Now it's time to loop through the move list.                           *
+    *  Loop through the move list, trying them one by one.                    *
     **************************************************************************/
 
     for (int i = 0; i < mcount; i++) {
@@ -380,7 +380,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
             continue;
         }
 
-        reduction_depth = 0;   // this move has not been reduced yet
+        reduction_depth   = 0; // this move has not been reduced yet
         new_depth = depth - 1; // decrease depth by one ply
 
         /**********************************************************************
@@ -414,7 +414,6 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
 
             reduction_depth = 1;
             if (moves_tried > 8) reduction_depth += 1;
-
             new_depth -= reduction_depth;
         }
 
@@ -449,7 +448,8 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         *  not certain now, so let's search to the full, unreduced depth.     *
         **********************************************************************/
 
-        if (reduction_depth && val > alpha) {
+        if (reduction_depth 
+		&& val > alpha) {
             new_depth += reduction_depth;
             reduction_depth = 0;
             goto re_search;

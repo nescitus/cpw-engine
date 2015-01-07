@@ -105,7 +105,7 @@ int badCapture(smove move) {
     **************************************************************************/
 
 	if (b.pawn_ctrl[b.color[move.from]^1] [move.to]
-	&&   e.PIECE_VALUE[move.piece_cap] + 200 - e.PIECE_VALUE[move.piece_from] < 0 )
+	&&   e.PIECE_VALUE[move.piece_cap] + 200 < e.PIECE_VALUE[move.piece_from] )
         return 1;
 
     /* if a capture is not processed, it cannot be considered bad */
