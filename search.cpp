@@ -28,11 +28,10 @@ enum eproto {
 U8 bestmove;         // move id passed between iterations for sorting purposes
 smove move_to_make;	 // move to be returned when search runs out of time
 
-/***************************************************************
-*  search_run() is the interface of all the search functions,  *
-*  the only function called outside search.cpp. It does some   *
-*  preparatory work, and then calls search_iterate();          *
-***************************************************************/
+/******************************************************************************
+*  search_run() is the only function called outside search.cpp, so it acts as *
+*  an interface. After some preparatory work it calls search_iterate();       *
+******************************************************************************/
 
 void search_run() {
 
@@ -59,10 +58,10 @@ void search_clearDriver() {
     sd.q_nodes = 0;
 }
 
-/**************************************************************
-*  search_iterate() calls search_root() with increasing depth *
-*  until allocated time is exhausted.                         *
-**************************************************************/
+/******************************************************************************
+*  search_iterate() calls search_root() with increasing depth until allocated *
+*  time is exhausted.                                                         *
+******************************************************************************/
 
 void search_iterate() {
     int val;
@@ -190,49 +189,49 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
     int  mate_value = INF - ply; // will be used in mate distance pruning
     smove move;
 
-    /************************************************************************
-    *  Probably later we will want to probe the transposition table.        *
-    *  Tell the cpu to prepare for that event. This is just a minor         *
-    *  speed optimization and program would run fine without that.          *
-    ************************************************************************/
+    /**************************************************************************
+    *  Probably later we will want to probe the transposition table. Here we  *
+	*  Tell  the  cpu to prepare for that event. This is just a minor  speed  *   
+	*  optimization and program would run fine without that.                  *
+    **************************************************************************/
 
     _mm_prefetch((char *)&tt[b.hash & tt_size], _MM_HINT_NTA);
 
-    /************************************************************************
-    * Check for timeout. This is quite time-consuming, so we do it only     *
-    * every so often. The side effect is that if we want  to limit search   *
-    * by number of nodes, it will be slightly inexact.                      *
-    ************************************************************************/
+    /**************************************************************************
+    * Check for timeout. This is quite time-consuming, so we do it only every *
+    * every so often. The side effect is that if we want to limit search by   *
+    * the number of nodes, it will be slightly inexact.                       *
+    **************************************************************************/
 
     if ( !time_over && !(sd.nodes & 4095) )
         time_over = time_stop();
     if ( time_over ) return 0;
 
-    /************************************************************************
-    * MATE DISTANCE PRUNING - a minor improvement that helps to shave off   *
-    * some nodes when the checkmate is near. Basically it prevents looking  *
-    * for checkmates taking longer than one we have already found. No Elo   *
-    * gain expected, but it's a nice feature. Don't use it at the root,     *
-    * since  this code  doesn't return a move, only a value.                *
-    ************************************************************************/
+    /**************************************************************************
+    * MATE DISTANCE PRUNING, a minor improvement that helps to shave off some *
+    * some nodes when the checkmate is near. Basically it prevents looking    *
+    * for checkmates taking longer than one we have already found. No Elo     *
+    * gain expected, but it's a nice feature. Don't use it at the root,       *
+    * since  this code  doesn't return a move, only a value.                  *
+    **************************************************************************/
 
     if (alpha < -mate_value) alpha = -mate_value;
     if (beta > mate_value - 1) beta = mate_value - 1;
     if (alpha >= beta) return alpha;
 
-    /************************************************************************
-    *  Are we in check? If so, extend. It also means that program will      *
-    *  never enter quiescence search while in check.                        *
-    ************************************************************************/
+    /**************************************************************************
+    *  Are we in check? If so, extend. It also means that program will never  *
+    *  never enter quiescence search while in check.                          *
+    **************************************************************************/
 
     flagInCheck = ( isAttacked( !b.stm, b.KingLoc[b.stm] ) );
     if ( flagInCheck ) ++depth;
 
-    /************************************************************************
-    *  At leaf nodes we do quiescence search (captures only) to make sure   *
-    *  that only relatively quiet positions with no hanging pieces will be  *
-    *  evaluated.                                                           *
-    ************************************************************************/
+    /**************************************************************************
+    *  At leaf nodes we do quiescence search (captures only) to make sure     *
+    *  that only relatively quiet positions with no hanging pieces will be    *
+    *  evaluated.                                                             *
+    **************************************************************************/
 
     if ( depth == 0 ) return Quiesce( alpha, beta );
 
@@ -240,29 +239,29 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
 
     if ( isRepetition() ) return contempt();
 
-    /************************************************************************
-    *  Read the transposition table. We may have already searched current   *
-    *  position. If depth was sufficient, then we might use the score       *
-    *  of that search. If not, hash move still is expected to be good       *
-    *  and should be sorted first.                                          *
-    *                                                                       *
-    *  NOTE: current implementation is sub-standard, since tt_move is just  *
-    *  an index showing move's location on a move list. We should be able   *
-    *  to retrieve move without generating full move list instead.          *
-    ************************************************************************/
+    /**************************************************************************
+    *  Read the transposition table. We may have already searched current     *
+    *  position. If depth was sufficient, then we might use the score         *
+    *  of that search. If not, hash move still is expected to be good         *
+    *  and should be sorted first.                                            *
+    *                                                                         *
+    *  NOTE: current implementation is sub-standard, since tt_move is just    *
+    *  an index showing move's location on a move list. We should be able     *
+    *  to retrieve move without generating full move list instead.            *
+    **************************************************************************/
 
     if ( ( val = tt_probe(depth, alpha, beta, &tt_move) ) != INVALID ) {
         // in pv nodes we return only in case of an exact hash hit
 		if (!is_pv || (val > alpha && val < beta)) {
 
-			/****************************************************************
-			*  Here we must be careful about checkmate scoring. "Mate in n" *
-			*  returned by transposition table means "mate in n if we start *
-			*  counting n right now". Yet search always returns mate scores *
-			*  as distance from root, so we must convert to that metric.    *
-			*  Other programs might hide similar code within tt_probe() and *
-			*  tt_save() functions.                                         *
-			****************************************************************/
+			/******************************************************************
+			*  Here we must be careful about checkmate scoring. "Mate in n"   *
+			*  returned by transposition table means "mate in n if we start   *
+			*  counting n right now". Yet search always returns mate scores   *
+			*  as distance from root, so we must convert to that metric.      *
+			*  Other programs might hide similar code within tt_probe() and   *
+			*  tt_save() functions.                                           *
+			******************************************************************/
 
 			if (abs(val) > INF - 100) {
 				if (val > 0) val -= ply;
@@ -273,9 +272,9 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
 		}
     }
 
-    /************************************************************************
-    * EVAL PRUNING / STATIC NULL MOVE                                       *
-    ************************************************************************/
+    /**************************************************************************
+    * EVAL PRUNING / STATIC NULL MOVE                                         *
+    **************************************************************************/
 
     if (depth < 3
     && (!is_pv)
@@ -289,14 +288,14 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
             return static_eval - eval_margin;
     }
 
-    /************************************************************************
-    *  Here  we introduce  NULL MOVE PRUNING. It  means  allowing opponent  *
-    *  to execute two moves in a row, i.e. capturing something and escaping *
-    *  a recapture. If this cannot  wreck our position, then it is so good  *
-    *  that there's  no  point in searching further. The flag "can_null"    *
-    *  ensures we don't do  two null moves in a row. Null move is not used  *
-    *  in  the endgame because of the risk of zugzwang.                     *
-    ************************************************************************/
+    /**************************************************************************
+    *  Here  we introduce  NULL MOVE PRUNING. It  means  allowing opponent    *
+    *  to execute two moves in a row, i.e. capturing something and escaping   *
+    *  a recapture. If this cannot  wreck our position, then it is so good    *
+    *  that there's  no  point in searching further. The flag "can_null"      *
+    *  ensures we don't do  two null moves in a row. Null move is not used    *
+    *  in  the endgame because of the risk of zugzwang.                       *
+    **************************************************************************/
 
     if ( ( depth > 2)
     &&   ( can_null )
@@ -308,10 +307,10 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         char ep_old = b.ep;
         move_makeNull();
 
-        /********************************************************************
-        *  We use so-called adaptative null move pruning. Size of reduction *
-        *  depends on remaining  depth.                                     *
-        ********************************************************************/
+        /**********************************************************************
+        *  We use so-called adaptative null move pruning. Size of reduction   *
+        *  depends on remaining  depth.                                       *
+        **********************************************************************/
 
         char R = 2;
         if ( depth > 6 ) R = 3;
@@ -324,12 +323,12 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         if (val >= beta) return beta;
     }
 
-    /************************************************************************
-    *  Decide  if FUTILITY PRUNING  is  applicable. If we are not in check, *
-    *  not searching for a checkmate and eval is below  (alpha - margin),   *
-    *  it  might  mean that searching non-tactical moves at  low depths     *
-    *  is futile, so we set a flag allowing this pruning.                   *
-    ************************************************************************/
+    /**************************************************************************
+    *  Decide  if FUTILITY PRUNING  is  applicable. If we are not in check,   *
+    *  not searching for a checkmate and eval is below (alpha - margin), it   *
+    *  might  mean that searching non-tactical moves at low depths is futile  *
+    *  so we set a flag allowing this pruning.                                *
+    **************************************************************************/
 
     int fmargin[4] = {0, 200, 300, 500};
 
@@ -349,9 +348,9 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
 
     bestmove = movelist[0].id;
 
-    /************************************************************************
-    *  Now it's time to loop through the move list.                         *
-    ************************************************************************/
+    /**************************************************************************
+    *  Now it's time to loop through the move list.                           *
+    **************************************************************************/
 
     for (int i = 0; i < mcount; i++) {
 
@@ -366,11 +365,11 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         }
         moves_tried++;
 
-        /********************************************************************
-        *  When the futility pruning flag is set, prune moves which do not  *
-        *  give  check and do not change material balance.  Some  programs  *
-        *  prune insufficient captures as well, but that seems too risky.   *
-        ********************************************************************/
+        /**********************************************************************
+        *  When the futility pruning flag is set, prune moves which do not    *
+        *  give  check and do not change material balance.  Some  programs    *
+        *  prune insufficient captures as well, but that seems too risky.     *
+        **********************************************************************/
 
         if ( f_prune
         &&   legal_move
@@ -384,15 +383,15 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         reduction_depth = 0;   // this move has not been reduced yet
         new_depth = depth - 1; // decrease depth by one ply
 
-        /********************************************************************
-        *  Late move reduction. Typically a cutoff occurs on trying one of  *
-        *  the first moves. If it doesn't, we are probably in an all-node,  *
-        *  which means that all moves will fail low. So we might as well    *
-        *  spare some effort, searching to reduced depth. Of course this is *
-        *  not a foolproof method, but it works more often than not. Still, *
-        *  we  need to exclude certain moves from reduction, in  order  to  *
-        *  filter out tactical moves that may cause a late cutoff.          *
-        ********************************************************************/
+        /**********************************************************************
+        *  Late move reduction. Typically a cutoff occurs on trying one of    *
+        *  the first moves. If it doesn't, we are probably in an all-node,    *
+        *  which means that all moves will fail low. So we might as well      *
+        *  spare some effort, searching to reduced depth. Of course this is   *
+        *  not a foolproof method, but it works more often than not. Still,   *
+        *  we  need to exclude certain moves from reduction, in  order  to    *
+        *  filter out tactical moves that may cause a late cutoff.            *
+        **********************************************************************/
 
         if (!is_pv
         && new_depth > 3
@@ -405,14 +404,13 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         && !move_iscapt(move)
         && !move_isprom(move) ) {
 
-            /****************************************************************
-            * Real programs tend use more advanced formulas to calculate    *
-            * reduction depth. Typically they calculate it from both        *
-            * remaining depth and move count. Formula used here is very     *
-            * basic and gives only a minimal improvement over uniform       *
-            * one ply reduction, and is included for the sake of complete-  *
-            * ness only.                                                    *
-            ****************************************************************/
+            /******************************************************************
+            * Real programs tend use more advanced formulas to calculate      *
+            * reduction depth. Typically they calculate it from both remai-   *
+            * ning depth and move count. Formula used here is very basic and  *
+            * gives only a minimal improvement over uniform one ply reduction,*
+			* and is included for the sake of completeness only.              *
+            ******************************************************************/
 
             reduction_depth = 1;
             if (moves_tried > 8) reduction_depth += 1;
@@ -422,21 +420,20 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
 
         re_search:
 
-        /********************************************************************
-        *  The code below introduces principal variation search. It  means  *
-        *  that once we are in a PV-node (indicated by IS_PV flag) and  we  *
-        *  have  found a move that raises alpha, we assume that  the  rest  *
-        *  of moves ought to be refuted. This is done  relatively  cheaply  *
-        *  by using  a null-window search centered around alpha.  Only  if  *
-        *  this search fails high, we are forced repeat it with full window.*
-        *                                                                   *
-        *  Understanding the shorthand in the first two lines is a bit      *
-        *  tricky. If alpha has not been raised, we might be either in      *
-        *  a  zero window (scout) node or in an open window (pv)  node,     *
-        *  entered after a scout search failed high. In both cases, we      *
-        *  need to search with the same alpha, the same beta AND the same   *
-        *  node type.                                                       *
-        ********************************************************************/
+        /**********************************************************************
+        *  The code below introduces principal variation search. It  means    *
+        *  that once we are in a PV-node (indicated by IS_PV flag) and  we    *
+        *  have  found a move that raises alpha, we assume that  the  rest    *
+        *  of moves ought to be refuted. This is done  relatively  cheaply    *
+        *  by using  a null-window search centered around alpha.  Only  if    *
+        *  this search fails high, we are forced repeat it with full window.  *
+        *                                                                     *
+        *  Understanding the shorthand in the first two lines is a bit tricky *
+        *  If alpha has not been raised, we might be either in a zero window  *
+        *  (scout) node or in an open window (pv) node, entered after a scout *
+		*  search failed high. In both cases, we need to search with the same *
+		*  alpha, the same beta AND the same node type.                       *                                            *
+        **********************************************************************/
 
         if (!raised_alpha)
             val = -Search(new_depth, ply+1, -beta, -alpha, DO_NULL, is_pv);
@@ -446,11 +443,11 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
                 val = -Search(new_depth, ply+1, -beta, -alpha, DO_NULL, IS_PV);
         }
 
-        /********************************************************************
-        *  Sometimes reduced search brings us above alpha. This is unusual, *
-        *  since we expected reduced move to be bad in first place. It is   *
-        *  not certain now, so let's search to the full, unreduced depth.   *
-        ********************************************************************/
+        /**********************************************************************
+        *  Sometimes reduced search brings us above alpha. This is unusual,   *
+        *  since we expected reduced move to be bad in first place. It is     *
+        *  not certain now, so let's search to the full, unreduced depth.     *
+        **********************************************************************/
 
         if (reduction_depth && val > alpha) {
             new_depth += reduction_depth;
@@ -460,24 +457,24 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
 
         move_unmake(move);
 
-        /********************************************************************
-        *  If  the  move doesn't return -INF, it means that  the  King      *
-        *  couldn't be captured immediately. So the move was legal. In this *
-        *  case we increase the legal_move counter, to look afterwards,     *
-        *  whether there were any legal moves on the board at all.          *
-        ********************************************************************/
+        /**********************************************************************
+        *  If the move doesn't return -INF, it means that the King couldn't   *
+        *  be captured immediately. So the move was legal. In this case we    *
+        *  increase the legal_move counter, to look afterwards, whether there *
+        *  were any legal moves on the board at all.                          *
+        **********************************************************************/
 
         legal_move += ( val != -INF );
 
         if ( time_over ) return 0;
 
-        /********************************************************************
-        *  We can improve over alpha, so we change the node value together  *
-        *  with  the expected move. Also the raised_alpha flag, needed  to  *
-        *  control PVS, is set. In case of a beta cuoff, when our position  *
-        *  is  so good that the score will not be accepted one ply before,  *
-        *  we return it immediately.                                        *
-        ********************************************************************/
+        /**********************************************************************
+        *  We can improve over alpha, so we change the node value together    *
+        *  with  the expected move. Also the raised_alpha flag, needed  to    *
+        *  control PVS, is set. In case of a beta cuoff, when our position    *
+        *  is  so good that the score will not be accepted one ply before,    *
+        *  we return it immediately.                                          *
+        **********************************************************************/
 
         if ( val > alpha ) {
 
@@ -485,20 +482,20 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
 
             if ( val >= beta ) {
 
-                /*************************************************************
-                *  On a quiet move update killer moves and history table     *
-                *  in order to enhance move ordering.                        *
-                *************************************************************/
+                /**************************************************************
+                *  On a quiet move update killer moves and history table      *
+                *  in order to enhance move ordering.                         *
+                **************************************************************/
 
                 if (!move_iscapt(move)
                 && !move_isprom(move)) {
                     setKillers(movelist[i], ply);
                     sd.history[move.from][move.to] += depth*depth;
 
-                    /*********************************************************
-                    *  With super deep search history table would overflow   *
-                    *  - let's prevent it.                                   *
-                    *********************************************************/
+                    /**********************************************************
+                    *  With super deep search history table would overflow    *
+                    *  - let's prevent it.                                    *
+                    **********************************************************/
 
                     if (sd.history[move.from][move.to] > SORT_KILL) {
                         for (int a = 0; a < 128; a++)
@@ -520,12 +517,12 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
 
     }   // end of looping through the moves
 
-    /************************************************************************
-    *  Checkmate and stalemate detection: if we can't find a legal move     *
-    *  in the current position, we test if we are in check. If so, mate     *
-    *  score relative to search depth is returned. If not, we use  draw     *
-    *  evaluation provided by contempt() function.                          *
-    ************************************************************************/
+    /**************************************************************************
+    *  Checkmate and stalemate detection: if we can't find a legal move in    *
+    *  the current position, we test if we are in check. If so, mate score    *
+    *  relative to search depth is returned. If not, we use draw score pro-   *
+    *  vided by contempt() function.                                          *
+    **************************************************************************/
 
     if ( !legal_move ) {
         bestmove = -1;
@@ -619,12 +616,11 @@ int info_pv( int val ) {
     return 0;
 }
 
-/***********************************************************
-*  countNps() guards against overflow and thus cares  for  *
-*  displaying  correct  nps during longer searches.  Node  *
-*  count is converted from U64 to unsigned int because of  *
-*  some problems with output.                              *
-***********************************************************/
+/******************************************************************************
+*  countNps() guards against overflow and thus cares for displaying correct   *
+*  nps during longer searches. Node count is converted from U64 to unsigned   * 
+*  int because of some problems with output.                                  *
+******************************************************************************/
 
 unsigned int countNps(unsigned int nodes, unsigned int time) {
     if ( time == 0 ) return 0;
@@ -635,11 +631,10 @@ unsigned int countNps(unsigned int nodes, unsigned int time) {
         return (nodes*1000) / time;
 }
 
-/***********************************************************
-*  Checking if the current position has been already       *
-*  encountered on the current search path. Function        *
-*  does NOT check the actual number of repetitions.        *
-***********************************************************/
+/******************************************************************************
+*  Checking if the current position has been already encountered on the cur-  *
+*  rent search path. Function does NOT check the number of repetitions.       *
+******************************************************************************/
 
 int isRepetition() {
 
@@ -651,11 +646,10 @@ int isRepetition() {
     return 0;
 }
 
-/************************************************************
-*  Clearing the history table is needed at the beginning    *
-*  of a search starting from a new position, like at the    *
-*  beginning of a new game.                                 *
-************************************************************/
+/******************************************************************************
+*  Clearing the history table is needed at the beginning of a search starting *
+*  from a new position, like at the beginning of a new game.                  * 
+******************************************************************************/
 
 void clearHistoryTable() {
     for (int i = 0; i < 128; i++)
@@ -664,12 +658,11 @@ void clearHistoryTable() {
         }
 }
 
-/************************************************************
-* ageHistoryTable() is run between searches  to  decrease   *
-* the  history values used for move sorting. This  causes   *
-* obsolete information to disappear gradually. Clearing     *
-* the table was worse for the move ordering.                *
-************************************************************/
+/******************************************************************************
+* ageHistoryTable() is run between searches to decrease the history values    *
+* used for move sorting. This  causes obsolete information to disappear gra-  *
+* dually. Clearing the table was worse for the move ordering.                 *
+******************************************************************************/
 
 void ageHistoryTable() {
     for (int i = 0; i < 128; i++)
@@ -678,12 +671,11 @@ void ageHistoryTable() {
         }
 }
 
-/************************************************************
-*  contempt() returns a draw value (which may be non-zero)  *
-*  relative  to  the side to move and to the  game  stage.  *
-*  This  way  we may make our program play for a  draw  or  *
-*  strive to avoid it.                                      *
-************************************************************/
+/******************************************************************************
+*  contempt() returns a draw value (which may be non-zero) relative to the    *
+*  side to move and to the  game  stage. This  way  we may make our program   *
+*  play for a  draw  or strive to avoid it.                                   *
+******************************************************************************/
 
 int contempt() {
     int value = draw_opening;
