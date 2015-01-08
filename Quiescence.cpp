@@ -26,11 +26,10 @@ int Quiesce( int alpha, int beta )  {
     if( alpha < val )
         alpha = val;
 
-    /*********************************************************************
-    *  We have taken into account rhe stand pat score, and it didn't let *
-    *  us  come to a definite conclusion about the position. So we  must *
-    *  do a real search.                                                 *
-    *********************************************************************/
+    /**************************************************************************
+    *  We have taken into account the stand pat score, and it didn't let us   *
+    *  come to a definite conclusion about the position. So we have to search *
+    **************************************************************************/
 
     smove movelist[256];
     U8 mcount = movegen_qs(movelist);
@@ -41,34 +40,32 @@ int Quiesce( int alpha, int beta )  {
 
         if ( movelist[i].piece_cap == KING ) return INF;
 
-        /*****************************************************************
-        *  Delta cutoff - a move guarentees the score well below alpha,  *
-        *  so  there's no point in searching it. This heuristic is  not  *
-        *  used  in the endgame, because of the  insufficient  material  *
-        *  issues and special endgame evaluation heuristics.             *
-        *****************************************************************/
+        /**********************************************************************
+        *  Delta cutoff - a move guarentees the score well below alpha, so    *
+        *  there's no point in searching it. We don't use his heuristic in    *
+        *  the endgame, because of the insufficient material issues.          *
+        **********************************************************************/
 
         if ( ( stand_pat + e.PIECE_VALUE[ movelist[i].piece_cap ] + 200 < alpha ) 
 		&&   ( b.PieceMaterial[!b.stm] - e.PIECE_VALUE[movelist[i].piece_cap] > e.ENDGAME_MAT ) 
 		&&   ( !move_isprom(movelist[i]) ) )
             continue;
 
-        /*****************************************************************
-        *  badCapture() replaces a cutoff based on the  Static Exchange  *
-        *  Evaluation,  marking  the place where it ought to  be  coded. *
-        *  Nevertheless, it saves quite a few nodes.                     *
-        *****************************************************************/
+        /**********************************************************************
+        *  badCapture() replaces a cutoff based on the Static Exchange Evalu- *
+        *  ation, marking the place where it ought to be coded. Despite being *
+		*  just a hack, it saves quite a few nodes.                           *
+        **********************************************************************/
 
         if ( badCapture( movelist[i] )
-                &&	!move_canSimplify( movelist[i] )
-                &&  !move_isprom( movelist[i] )
-           )
+        &&  !move_canSimplify( movelist[i] )
+        &&  !move_isprom( movelist[i] ) )
             continue;
 
-        /*****************************************************************
-        *  Cutoffs  misfired, so the move in question can turn out well. *
-        *  Let us try it, then.                                          *
-        *****************************************************************/
+        /**********************************************************************
+        *  Cutoffs  misfired, so the move in question can turn out well.      *
+        *  Let us try it, then.                                               *
+        **********************************************************************/
 
         move_make( movelist[i] );
 

@@ -9,7 +9,7 @@ int knight_adj[9] = { -20, -16, -12, -8, -4,  0,  4,  8, 12};
 int rook_adj[9] =   {  15,  12,   9,  6,  3,  0, -3, -6, -9};
 
 static const int SafetyTable[100] = {
-    0,  0,   1,   2,   3,   5,   7,   9,  12,  15,
+     0,  0,   1,   2,   3,   5,   7,   9,  12,  15,
     18,  22,  26,  30,  35,  39,  44,  50,  56,  62,
     68,  75,  82,  85,  89,  97, 105, 113, 122, 131,
     140, 150, 169, 180, 191, 202, 213, 225, 237, 248,
@@ -32,6 +32,8 @@ struct eval_vector {
     int egMob[2];
     int attCnt[2];
     int attWeight[2];
+	int mgTropism[2];
+	int egTropism[2];
     int kingShield[2];
     int MaterialAdjustement[2];
     int Blockages[2];
@@ -42,10 +44,10 @@ int eval( int alpha, int beta, int use_hash ) {
     int result = 0, mgScore = 0, egScore = 0;
     int stronger, weaker;
 
-    /***********************************************************
-    /  Probe the evaluatinon hashtable, unless we call eval()  /
-    /  only in order to display detailed result                /
-    ***********************************************************/
+    /**************************************************************************
+    *  Probe the evaluatinon hashtable, unless we call eval() only in order   *
+	*  to display detailed result                                             *
+    **************************************************************************/
 
     int probeval = tteval_probe();
     if (probeval != INVALID && use_hash)
@@ -61,6 +63,8 @@ int eval( int alpha, int beta, int use_hash ) {
 		v.egMob[side] = 0;
 		v.attCnt[side] = 0;
 		v.attWeight[side] = 0;
+		v.mgTropism[side] = 0;
+		v.egTropism[side] = 0;
 		v.MaterialAdjustement[side] = 0;
 		v.Blockages[side] = 0;
 		v.PositionalThemes[side] = 0;
@@ -143,6 +147,8 @@ int eval( int alpha, int beta, int use_hash ) {
 
     mgScore += (v.mgMob[WHITE] - v.mgMob[BLACK]);
     egScore += (v.egMob[WHITE] - v.egMob[BLACK]);
+	mgScore += (v.mgTropism[WHITE] - v.mgTropism[BLACK]);
+	egScore += (v.egTropism[WHITE] - v.egTropism[BLACK]);
     if (v.gamePhase > 24) v.gamePhase = 24;
     int mgWeight = v.gamePhase;
     int egWeight = 24 - mgWeight;
@@ -303,6 +309,15 @@ void EvalKnight(S8 sq, S8 side) {
         v.attCnt[side]++;
         v.attWeight[side] += 2 * att;
     }
+
+	/**************************************************************************
+	* Evaluate king tropism                                                   *
+	**************************************************************************/
+
+	int tropism = getTropism(sq, b.KingLoc[!side]);
+	v.mgTropism[side] += 3 * tropism;
+	v.egTropism[side] += 3 * tropism;
+
 }
 
 void EvalBishop(S8 sq, S8 side) {
@@ -403,7 +418,13 @@ void EvalBishop(S8 sq, S8 side) {
         v.attWeight[side] += 2*att;
     }
 
+	/**************************************************************************
+	* Evaluate king tropism                                                   *
+	**************************************************************************/
 
+	int tropism = getTropism(sq, b.KingLoc[!side]);
+	v.mgTropism[side] += 2 * tropism;
+	v.egTropism[side] += 1 * tropism;
 }
 
 void EvalRook(S8 sq, S8 side) {
@@ -494,6 +515,13 @@ void EvalRook(S8 sq, S8 side) {
         v.attWeight[side] += 3*att;
     }
 
+	/**************************************************************************
+	* Evaluate king tropism                                                   *
+	**************************************************************************/
+
+	int tropism = getTropism(sq, b.KingLoc[!side]);
+	v.mgTropism[side] += 2 * tropism;
+	v.egTropism[side] += 1 * tropism;
 }
 
 void EvalQueen(S8 sq, S8 side) {
@@ -553,6 +581,14 @@ void EvalQueen(S8 sq, S8 side) {
         v.attCnt[side]++;
         v.attWeight[side] += 4*att;
     }
+
+	/**************************************************************************
+	* Evaluate king tropism                                                   *
+	**************************************************************************/
+
+	int tropism = getTropism(sq, b.KingLoc[!side]);
+	v.mgTropism[side] += 2 * tropism;
+	v.egTropism[side] += 4 * tropism;
 
 }
 
@@ -822,7 +858,11 @@ void printEval() {
     printf("Mg Mobility            : ");
     printEvalFactor(v.mgMob[WHITE], v.mgMob[BLACK]);
     printf("Eg Mobility            : ");
-    printEvalFactor(v.mgMob[WHITE], v.egMob[BLACK]);
+    printEvalFactor(v.egMob[WHITE], v.egMob[BLACK]);
+    printf("Mg Tropism             : ");
+    printEvalFactor(v.mgTropism[WHITE], v.mgTropism[BLACK]);
+    printf("Eg Tropism             : ");
+    printEvalFactor(v.egTropism[WHITE], v.egTropism[BLACK]);
     printf("Pawn structure      : %d \n", evalPawnStructure() );
     printf("Blockages           : ");
     printEvalFactor(v.Blockages[WHITE], v.Blockages[BLACK]);
@@ -839,4 +879,8 @@ void printEval() {
 
 void printEvalFactor(int wh, int bl) {
     printf("white %4d, black %4d, total: %4d \n", wh, bl, wh - bl);
+}
+
+int getTropism(int sq1, int sq2) {
+	return 7 - (abs(ROW(sq1) - ROW(sq2)) + abs(COL(sq1) - COL(sq2)));
 }

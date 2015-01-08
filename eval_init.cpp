@@ -28,50 +28,48 @@ int index_black[64] = {
     A8, B8, C8, D8, E8, F8, G8, H8
 };
 
-int dist_bonus[64][64];
-
-/*****************************************************************
-*                           PAWN PCSQ                            *
-*                                                                *
-*  Unlike TSCP, CPW generally doesn't want to advance its pawns  *
-*  just for the fun of it. It takes into account the following:  *
-*                                                                *
-*  - file-dependent component, encouraging program to capture    *
-*    towards the center                                          *
-*  - small bonus for staying on the 2nd rank                     *
-*  - small bonus for standing on a3/h3                           *
-*  - penalty for d/e pawns on their initial squares              *
-*  - bonus for occupying the center                              *
-*****************************************************************/
+/******************************************************************************
+*                           PAWN PCSQ                                         *
+*                                                                             *
+*  Unlike TSCP, CPW generally doesn't want to advance its pawns. Its piece/   *
+*  square table for pawns takes into account the following factors:           *
+*                                                                             *
+*  - file-dependent component, encouraging program to capture                 *
+*    towards the center                                                       *
+*  - small bonus for staying on the 2nd rank                                  *
+*  - small bonus for standing on a3/h3                                        *
+*  - penalty for d/e pawns on their initial squares                           *
+*  - bonus for occupying the center                                           *
+******************************************************************************/
 
 int pawn_pcsq_mg[64] = {
-    0,   0,   0,   0,   0,   0,   0,   0,
+     0,   0,   0,   0,   0,   0,   0,   0,
     -6,  -4,   1,   1,   1,   1,  -4,  -6,
     -6,  -4,   1,   2,   2,   1,  -4,  -6,
     -6,  -4,   2,   8,   8,   2,  -4,  -6,
     -6,  -4,   5,  10,  10,   5,  -4,  -6,
     -4,  -4,   1,   5,   5,   1,  -4,  -4,
     -6,  -4,   1, -24,  -24,  1,  -4,  -6,
-    0,   0,   0,   0,   0,   0,   0,   0
+     0,   0,   0,   0,   0,   0,   0,   0
 };
 
 int pawn_pcsq_eg[64] = {
-    0,   0,   0,   0,   0,   0,   0,   0,
+     0,   0,   0,   0,   0,   0,   0,   0,
     -6,  -4,   1,   1,   1,   1,  -4,  -6,
     -6,  -4,   1,   2,   2,   1,  -4,  -6,
     -6,  -4,   2,   8,   8,   2,  -4,  -6,
     -6,  -4,   5,  10,  10,   5,  -4,  -6,
     -4,  -4,   1,   5,   5,   1,  -4,  -4,
     -6,  -4,   1, -24,  -24,  1,  -4,  -6,
-    0,   0,   0,   0,   0,   0,   0,   0
+     0,   0,   0,   0,   0,   0,   0,   0
 };
 
-/****************************************************************
-*    KNIGHT PCSQ                                                *
-*                                                               *
-*   - centralization bonus                                      *
-*   - penalty for not being developed                           *
-****************************************************************/
+/******************************************************************************
+*    KNIGHT PCSQ                                                              *
+*                                                                             *
+*   - centralization bonus                                                    *
+*   - penalty for not being developed                                         *
+******************************************************************************/
 
 int knight_pcsq_mg[64] = {
     -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,
@@ -96,13 +94,13 @@ int knight_pcsq_eg[64] = {
 };
 
 
-/****************************************************************
-*                BISHOP PCSQ                                    *
-*                                                               *
-*   - centralization bonus, smaller than for knight             *
-*   - penalty for not being developed                           *
-*   - good squares on the own half of the board                 *
-****************************************************************/
+/******************************************************************************
+*                BISHOP PCSQ                                                  *
+*                                                                             *
+*   - centralization bonus, smaller than for knight                           *
+*   - penalty for not being developed                                         *
+*   - good squares on the own half of the board                               *
+******************************************************************************/
 
 int bishop_pcsq_mg[64] = {
     -4,  -4,  -4,  -4,  -4,  -4,  -4,  -4,
@@ -126,118 +124,117 @@ int bishop_pcsq_eg[64] = {
     -4,  -4, -12,  -4,  -4, -12,  -4,  -4
 };
 
-/****************************************************************
-*                        ROOK PCSQ                              *
-*                                                               *
-*    - bonus for 7th and 8th ranks                              *
-*    - penalty for a/h columns                                  *
-*    - small centralization bonus                               *
-*****************************************************************/
+/******************************************************************************
+*                        ROOK PCSQ                                            *
+*                                                                             *
+*    - bonus for 7th and 8th ranks                                            *
+*    - penalty for a/h columns                                                *
+*    - small centralization bonus                                             *
+******************************************************************************/
 
 int rook_pcsq_mg[64] = {
-    5,   5,   5,   5,   5,   5,   5,   5,
+     5,   5,   5,   5,   5,   5,   5,   5,
     20,  20,  20,  20,  20,  20,  20,  20,
     -5,   0,   0,   0,   0,   0,   0,  -5,
     -5,   0,   0,   0,   0,   0,   0,  -5,
     -5,   0,   0,   0,   0,   0,   0,  -5,
     -5,   0,   0,   0,   0,   0,   0,  -5,
     -5,   0,   0,   0,   0,   0,   0,  -5,
-    0,   0,   0,   2,   2,   0,   0,   0
+     0,   0,   0,   2,   2,   0,   0,   0
 };
 
 int rook_pcsq_eg[64] = {
-    5,   5,   5,   5,   5,   5,   5,   5,
+     5,   5,   5,   5,   5,   5,   5,   5,
     20,  20,  20,  20,  20,  20,  20,  20,
     -5,   0,   0,   0,   0,   0,   0,  -5,
     -5,   0,   0,   0,   0,   0,   0,  -5,
     -5,   0,   0,   0,   0,   0,   0,  -5,
     -5,   0,   0,   0,   0,   0,   0,  -5,
     -5,   0,   0,   0,   0,   0,   0,  -5,
-    0,   0,   0,   2,   2,   0,   0,   0
+     0,   0,   0,   2,   2,   0,   0,   0
 };
 
-/***************************************************************************
-*                     QUEEN PCSQ                                           *
-*                                                                          *
-* - small bonus for centralization in the endgame                          *
-* - penalty for staying on the 1st rank, between rooks in the midgame      *
-***************************************************************************/
+/******************************************************************************
+*                     QUEEN PCSQ                                              *
+*                                                                             *
+* - small bonus for centralization in the endgame                             *
+* - penalty for staying on the 1st rank, between rooks in the midgame         *
+******************************************************************************/
 
 int queen_pcsq_mg[64] = {
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 1, 1, 1, 1, 0, 0,
-    0, 0, 1, 2, 2, 1, 0, 0,
-    0, 0, 2, 3, 3, 2, 0, 0,
-    0, 0, 2, 3, 3, 2, 0, 0,
-    0, 0, 1, 2, 2, 1, 0, 0,
-    0, 0, 1, 1, 1, 1, 0, 0,
-    -5, -5, -5, -5, -5, -5, -5, -5
+     0,   0,   0,   0,   0,   0,   0,   0,
+     0,   0,   1,   1,   1,   1,   0,   0,
+     0,   0,   1,   2,   2,   1,   0,   0,
+     0,   0,   2,   3,   3,   2,   0,   0,
+     0,   0,   2,   3,   3,   2,   0,   0,
+     0,   0,   1,   2,   2,   1,   0,   0,
+     0,   0,   1,   1,   1,   1,   0,   0,
+    -5,  -5,  -5,  -5,  -5,  -5,  -5,  -5
 };
 
 int queen_pcsq_eg[64] = {
-    0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 1, 1, 1, 1, 0, 0,
-    0, 0, 1, 2, 2, 1, 0, 0,
-    0, 0, 2, 3, 3, 2, 0, 0,
-    0, 0, 2, 3, 3, 2, 0, 0,
-    0, 0, 1, 2, 2, 1, 0, 0,
-    0, 0, 1, 1, 1, 1, 0, 0,
-    -5, -5, -5, -5, -5, -5, -5, -5
+     0,   0,   0,   0,   0,   0,   0,   0,
+     0,   0,   1,   1,   1,   1,   0,   0,
+     0,   0,   1,   2,   2,   1,   0,   0,
+     0,   0,   2,   3,   3,   2,   0,   0,
+     0,   0,   2,   3,   3,   2,   0,   0,
+     0,   0,   1,   2,   2,   1,   0,   0,
+     0,   0,   1,   1,   1,   1,   0,   0,
+    -5,  -5,  -5,  -5,  -5,  -5,  -5,  -5
 };
 
 int king_pcsq_mg[64] = {
-    -40, -30, -50, -70, -70, -50, -30, -40,
-    -30, -20, -40, -60, -60, -40, -20, -30,
-    -20, -10, -30, -50, -50, -30, -10, -20,
-    -10,   0, -20, -40, -40, -20,   0, -10,
-    0,  10, -10, -30, -30, -10,  10,   0,
+   -40, -30, -50, -70, -70, -50, -30, -40,
+   -30, -20, -40, -60, -60, -40, -20, -30,
+   -20, -10, -30, -50, -50, -30, -10, -20,
+   -10,   0, -20, -40, -40, -20,   0, -10,
+     0,  10, -10, -30, -30, -10,  10,   0,
     10,  20,   0, -20, -20,   0,  20,  10,
     30,  40,  20,   0,   0,  20,  40,  30,
     40,  50,  30,  10,  10,  30,  50,  40
 };
 
 int king_pcsq_eg[64] = {
-    -72, -48, -36, -24, -24, -36, -48, -72,
-    -48, -24, -12,   0,   0, -12, -24, -48,
-    -36, -12,   0,  12,  12,   0, -12, -36,
-    -24,   0,  12,  24,  24,  12,   0, -24,
-    -24,   0,  12,  24,  24,  12,   0, -24,
-    -36, -12,   0,  12,  12,   0, -12, -36,
-    -48, -24, -12,   0,   0, -12, -24, -48,
-    -72, -48, -36, -24, -24, -36, -48, -72
+   -72, -48, -36, -24, -24, -36, -48, -72,
+   -48, -24, -12,   0,   0, -12, -24, -48,
+   -36, -12,   0,  12,  12,   0, -12, -36,
+   -24,   0,  12,  24,  24,  12,   0, -24,
+   -24,   0,  12,  24,  24,  12,   0, -24,
+   -36, -12,   0,  12,  12,   0, -12, -36,
+   -48, -24, -12,   0,   0, -12, -24, -48,
+   -72, -48, -36, -24, -24, -36, -48, -72
 };
 
-/*****************************************************************
-*                     WEAK PAWNS PCSQ                            *
-*                                                                *
-*  Current version of CPW-engine does not differentiate between  *
-*  isolated  and  backward pawns, using one  generic  cathegory  *
-*  of  weak pawns. The penalty is bigger in the center, on  the  *
-*  assumption  that  weak  central pawns can be  attacked  from  *
-*  many  directions. If the penalty seems too low, please  note  *
-*  that being on a semi-open file will come into equation, too.  *
-*****************************************************************/
+/******************************************************************************
+*                     WEAK PAWNS PCSQ                                         *
+*                                                                             *
+*  Current version of CPW-engine does not differentiate between isolated and  *
+*  backward pawns, using one  generic  cathegory of  weak pawns. The penalty  *
+*  is bigger in the center, on the assumption that weak central pawns can be  *
+*  attacked  from many  directions. If the penalty seems too low, please note *
+*  that being on a semi-open file will come into equation, too.               *
+******************************************************************************/
 
 int weak_pawn_pcsq[64] = {
-    0,   0,   0,   0,   0,   0,   0,   0,
-    -10, -12, -14, -16, -16, -14, -12, -10,
-    -10, -12, -14, -16, -16, -14, -12, -10,
-    -10, -12, -14, -16, -16, -14, -12, -10,
-    -10, -12, -14, -16, -16, -14, -12, -10,
+     0,   0,   0,   0,   0,   0,   0,   0,
+   -10, -12, -14, -16, -16, -14, -12, -10,
+   -10, -12, -14, -16, -16, -14, -12, -10,
+   -10, -12, -14, -16, -16, -14, -12, -10,
+   -10, -12, -14, -16, -16, -14, -12, -10,
     -8, -12, -14, -16, -16, -14, -12, -10,
     -8, -12, -14, -16, -16, -14, -12, -10,
-    0,   0,   0,   0,   0,   0,   0,   0
+     0,   0,   0,   0,   0,   0,   0,   0
 };
 
 int passed_pawn_pcsq[64] = {
-    0,   0,   0,   0,   0,   0,   0,   0,
-    100, 100, 100, 100, 100, 100, 100, 100,
+     0,   0,   0,   0,   0,   0,   0,   0,
+   100, 100, 100, 100, 100, 100, 100, 100,
     80,  80,  80,  80,  80,  80,  80,  80,
     60,  60,  60,  60,  60,  60,  60,  60,
     40,  40,  40,  40,  40,  40,  40,  40,
     20,  20,  20,  20,  20,  20,  20,  20,
     20,  20,  20,  20,  20,  20,  20,  20,
-    0,   0,   0,   0,   0,   0,   0,   0
+     0,   0,   0,   0,   0,   0,   0,   0
 };
 
 
@@ -267,19 +264,6 @@ void setBasicValues() {
     e.BISHOP_PAIR   = 30;
     e.P_KNIGHT_PAIR = 8;
     e.P_ROOK_PAIR   = 16;
-
-    /*************************************************
-    *  Calculate  the  value  of  piece  material    *
-    *  at  the  beginning of  the  game,  which  is  *
-    *  used for scaling the king tropism evaluation. *
-    *  This  way we don't have to update a constant  *
-    *  every time we change material values.         *
-    *************************************************/
-
-    e.START_MATERIAL = e.PIECE_VALUE[QUEEN]
-                       + 2 * e.PIECE_VALUE[ROOK]
-                       + 2 * e.PIECE_VALUE[BISHOP]
-                       + 2 * e.PIECE_VALUE[KNIGHT];
 
     /*************************************************
     * Values used for sorting captures are the same  *
@@ -329,15 +313,14 @@ void setSquaresNearKing() {
             e.sqNearK[WHITE][i][j] = 0;
             e.sqNearK[BLACK][i][j] = 0;
 
-            if (IS_SQ(i) &&
-                    IS_SQ(j)) {
+            if (IS_SQ(i) && IS_SQ(j)) {
 
                 // squares constituting the ring around both kings
 
-                if (j == i + NORTH || j == i + SOUTH ||
-                        j == i + EAST || j == i + WEST ||
-                        j == i + NW || j == i + NE ||
-                        j == i + SW || j == i + SE) {
+                if (j == i + NORTH || j == i + SOUTH 
+				||  j == i + EAST  || j == i + WEST 
+				||  j == i + NW    || j == i + NE 
+				||  j == i + SW    || j == i + SE) {
 
                     e.sqNearK[WHITE][i][j] = 1;
                     e.sqNearK[BLACK][i][j] = 1;
@@ -345,19 +328,18 @@ void setSquaresNearKing() {
 
                 /* squares in front of the white king ring */
 
-                if (j == i + NORTH + NORTH ||
-                        j == i + NORTH + NE ||
-                        j == i + NORTH + NW)
+                if (j == i + NORTH + NORTH 
+				||  j == i + NORTH + NE 
+				||  j == i + NORTH + NW)
                     e.sqNearK[WHITE][i][j] = 1;
 
                 // squares in front og the black king ring
 
-                if (j == i + SOUTH + SOUTH ||
-                        j == i + SOUTH + SE ||
-                        j == i + SOUTH + SW)
+                if (j == i + SOUTH + SOUTH 
+				||  j == i + SOUTH + SE 
+				||  j == i + SOUTH + SW)
                     e.sqNearK[WHITE][i][j] = 1;
             }
-
         }
 }
 

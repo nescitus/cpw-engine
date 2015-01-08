@@ -164,7 +164,6 @@ struct s_eval_data {
 
     int PIECE_VALUE[6];
     int SORT_VALUE[6];
-    int START_MATERIAL;
 
     /* Piece-square tables - we use size of the board representation,
     not 0..63, to avoid re-indexing. Initialization routine, however,
@@ -276,6 +275,7 @@ void processIniString(char line[250] );
 
 int eval(int alpha, int beta, int use_hash);
 int isPiece(U8 color, U8 piece, S8 sq);
+int getTropism(int sq1, int sq2);
 void printEval();
 void printEvalFactor(int wh, int bl);
 

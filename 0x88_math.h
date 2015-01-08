@@ -34,7 +34,7 @@
 #define NW    15
 #define SE    -15
 
-/* geberate square number from row and column */
+/* generate square number from row and column */
 #define SET_SQ(row,col) (row * 16 + col)
 
 /* does a given number represent a square on the board? */
