@@ -46,10 +46,12 @@ int move_make(smove move) {
     /* a piece arrives to its destination square */
     fillSq( !b.stm, move.piece_to, move.to );
 
-    /* castle flags
-    	if either a king or a rook leaves its initial square, the side looses its castling-right.
-    	The same happens if another piece moves to this square (eg.: captures a rook on its initial square)
-    */
+    /**************************************************************************
+	*  Reset the castle flags. If either a king or a rook leaves its initial  *
+	*  square, the side looses the castling rights. The same happens when     *
+	*  a rook on its initial square gets captured.                            *
+    **************************************************************************/
+
     switch (move.from) {
     case H1:
         b.castle &= ~CASTLE_WK;
@@ -93,12 +95,12 @@ int move_make(smove move) {
     b.hash ^= zobrist.castling[move.castle];
     b.hash ^= zobrist.castling[b.castle];
 
-    /* castle-move
-    	in communication with the gui a castling move is represented through
-    	the king move. (eg.: e1g1 = White castles short) This king move already
-    	got executed in the code above with the fillSq() and clearSq() command.
-    	Whats missing now is the relating rook-move.
-    */
+    /**************************************************************************
+    *   Finish the castling move. It is represented as the king move (e1g1    *
+	*   = White castles short), which has already been executed above. Now    *
+    *   we must move the rook to complete castling.                           *
+    **************************************************************************/
+
     if (move.flags & MFLAG_CASTLE) {
         if (move.to == G1) {
             clearSq(H1);
@@ -118,28 +120,29 @@ int move_make(smove move) {
         }
     }
 
-    /* en-passant flag
-    	First erase the current state of the ep-flag, then set it again
-    	in  case there has been a two square pawn move that allows such
-    	capture. For example, 1.e4 in the initial position will not set
-    	the en passant flag, because there are no black pawns on d4 and f4.
-    	This soluion helps with opening book and increases the number of
-    	transposition table hits.
-    */
+    /**************************************************************************
+    *  Erase the current state of the ep-flag, then set it again if a pawn    *
+	*  jump that allows such capture has been made. 1.e4 in the initial po-   *
+	*  sition will not set the en passant flag, because there are no black    *
+	*  pawns on d4 and f4. This soluion helps with opening book and increa-   * 
+	*  ses the number of transposition table hits.                            *
+    **************************************************************************/
+
     if (b.ep != -1) {
         b.hash ^= zobrist.ep[b.ep];
         b.ep = -1;
     }
-    if ( (move.piece_from == PAWN) && ( abs(move.from - move.to) == 32 ) &&
-		(b.pawn_ctrl[b.stm] [(move.from + move.to) / 2])
+    if ( (move.piece_from == PAWN) && ( abs(move.from - move.to) == 32 ) 
+	&&   (b.pawn_ctrl[b.stm] [(move.from + move.to) / 2])
        ) {
         b.ep = (move.from + move.to) / 2;
         b.hash ^= zobrist.ep[b.ep];
     }
 
-    /* en-passant capture
-    	if the move is an en-passant capture, the captured pawn has to be removed manually
-    */
+    /**************************************************************************
+    *  Remove a pawn captured en passant                                      *
+    **************************************************************************/
+
     if (move.flags & MFLAG_EPCAPTURE) {
         if (!b.stm == WHITE) {
             clearSq(move.to - 16);
@@ -168,19 +171,15 @@ int move_unmake(smove move) {
         b.hash ^= zobrist.ep[move.ep];
     b.ep = move.ep;
 
-    clearSq(move.to);
-
+    /* Move the piece back */
+	clearSq(move.to);
     fillSq(b.stm, move.piece_from, move.from);
 
-    /* un-capture
-    	in case of a capture, put the captured piece back
-    */
-    if ( move_iscapt(move) )
+    /* Un-capture: in case of a capture, put the captured piece back */
+	if ( move_iscapt(move) )
         fillSq(!b.stm, move.piece_cap, move.to );
 
-    /* un-castle
-    	the king has already been moved, now move the rook
-    */
+    /* Un-castle: the king has already been moved, now move the rook */
     if (move.flags & MFLAG_CASTLE) {
         if (move.to == G1) {
             clearSq(F1);
@@ -205,9 +204,7 @@ int move_unmake(smove move) {
     b.hash ^= zobrist.castling[b.castle];
     b.castle = move.castle;
 
-    /* en-passant-uncapture
-    	put the captured pawn back to its initial square
-    */
+    /* Put the pawn captured en passant back to its initial square */
     if (move.flags & MFLAG_EPCAPTURE) {
         if (b.stm == WHITE) {
             fillSq(BLACK,PAWN,move.to - 16);
@@ -230,14 +227,12 @@ int move_isprom(smove m) {
 }
 
 int move_canSimplify(smove m) {
-    if ( m.piece_cap == PAWN ||
-            b.PieceMaterial[!b.stm] - e.PIECE_VALUE[m.piece_cap] > e.ENDGAME_MAT )
+    if ( m.piece_cap == PAWN 
+	||   b.PieceMaterial[!b.stm] - e.PIECE_VALUE[m.piece_cap] > e.ENDGAME_MAT )
         return 0;
     else
         return 1;
 }
-
-// this function returns number of legal moves in the current position
 
 int move_countLegal() {
     smove mlist[256];
@@ -246,15 +241,16 @@ int move_countLegal() {
 
     for (int i = 0; i < mcount; i++) {
 
-        // try a move...
+        /* try a move... */
         move_make( mlist[i] );
 
-        // ...then increase the counter if it did not leave us in check
+        /* ...then increase the counter if it did not leave us in check */
         if ( !isAttacked( b.stm, b.KingLoc[!b.stm] ) ) ++result;
 
         move_unmake(mlist[i]);
     }
 
+	/* return number of legal moves in the current position */
     return result;
 }
 
@@ -263,13 +259,12 @@ int move_isLegal(smove m) {
     int movecount = movegen(movelist, 0xFF);
 
     for (int i = 0; i < movecount; i++) {
-        if ( movelist[i].from == m.from &&
-                movelist[i].to   == m.to ) {
+        if ( movelist[i].from == m.from 
+		&&   movelist[i].to   == m.to ) {
 
             int result = 1;
 
-            // test if the move in question leaves us in check
-
+            /* test if the move in question leaves us in check */
             move_make( movelist[i] );
             if ( isAttacked( b.stm, b.KingLoc[!b.stm] ) ) result = 0;
             move_unmake( movelist[i] );
