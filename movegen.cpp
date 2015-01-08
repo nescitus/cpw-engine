@@ -86,13 +86,10 @@ U8 movegen(smove * moves, U8 tt_move, bool captures) {
                         if (b.pieces[pos] == PIECE_EMPTY) {
                             if (!captures)
                                 movegen_push(sq, pos, b.pieces[sq], PIECE_EMPTY, MFLAG_NORMAL);
-                        }
-                        else if (b.color[pos] != b.stm) {
-                            movegen_push(sq, pos, b.pieces[sq], b.pieces[pos], MFLAG_CAPTURE);
-                            break;
-                        }
-                        else {
-                            break;
+						} else {
+							if (b.color[pos] != b.stm) 
+                               movegen_push(sq, pos, b.pieces[sq], b.pieces[pos], MFLAG_CAPTURE);
+                            break; // we're hitting a piece, so looping is over
                         }
 
                         if (! slide[b.pieces[sq]]) break;
@@ -133,11 +130,9 @@ U8 movegen_qs(smove * moves) {
                         if (! IS_SQ(pos)) break;
 
                         if (b.pieces[pos] != PIECE_EMPTY) {
-                            if (b.color[pos] != b.stm) {
+                            if (b.color[pos] != b.stm)
                                 movegen_push(sq, pos, b.pieces[sq], b.pieces[pos], MFLAG_CAPTURE);
-                                break;
-                            }
-                            else break; // hitting own piece
+                            break; // we're hitting a piece, so looping is over
                         }
 
                         if (! slide[b.pieces[sq]]) break;
