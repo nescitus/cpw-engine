@@ -20,14 +20,18 @@ int isDraw() {
     /* no pawns */
     if (!b.PawnMaterial[WHITE] && !b.PawnMaterial[BLACK] ) {
 
-        /* both sides have at most one minor piece - to guard against the possibility
-           of a helpmate in the corner, we do not claim an immediate draw if the king
-           of the weaker side stands on the edge of the board */
+        /**********************************************************************
+		*  We act only if both sides have at most one minor piece. To  guard  *
+		*  against  the possibility of a helpmate in the corner, we  do  not  *
+		*  claim  an immediate draw if the king of the weaker side stands on  *
+		*  the edge of the board. Our recognizer catches bare kings, Km vs K  *
+		*  and Km vs Km without kings on the edge.                            *
+		**********************************************************************/
 
-        if ( b.PieceMaterial[WHITE] < 400 &&
-                b.PieceMaterial[BLACK] < 400 &&
-                ( !is_rim[b.KingLoc[WHITE] ] || b.PieceMaterial[BLACK] == 0 ) &&
-                ( !is_rim[b.KingLoc[BLACK] ] || b.PieceMaterial[WHITE] == 0 )
+        if ( b.PieceMaterial[WHITE] < 400 
+		&&   b.PieceMaterial[BLACK] < 400 
+		&&   ( !is_rim[b.KingLoc[WHITE] ] || b.PieceMaterial[BLACK] == 0 ) 
+		&&   ( !is_rim[b.KingLoc[BLACK] ] || b.PieceMaterial[WHITE] == 0 )
            )
             return 1;
 

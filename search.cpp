@@ -109,6 +109,7 @@ int search_root( U8 depth, int alpha, int beta ) {
     int flagInCheck;
     smove movelist[256];
     int val = 0;
+	int best = -INF;
 
     U8 currmove_legal = 0;
 
@@ -143,10 +144,13 @@ int search_root( U8 depth, int alpha, int beta ) {
 
         /* the "if" clause introduces PVS at root */
 
-        if ( ( i == 0 ) ||
-                ( -Search( depth-1, 0, -alpha-1, -alpha, DO_NULL, NO_PV ) > alpha ) )
+		if (best == -INF) 
+			val = -Search(depth - 1, 0, -beta, -alpha, DO_NULL, IS_PV);
+		else
+            if ( -Search( depth-1, 0, -alpha-1, -alpha, DO_NULL, NO_PV ) > alpha )
             val = -Search(depth-1, 0, -beta, -alpha, DO_NULL, IS_PV );
 
+		if (val > best) best = val;
         move_unmake( movelist[i] );
 
         if (time_over) break;

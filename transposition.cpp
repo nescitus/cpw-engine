@@ -50,16 +50,16 @@ int tt_init() {
 
 int tt_setsize(int size) {
 
-    /* check if size is a power of 2
-    	if not, make it the next lower power of 2
-    	this allows for a faster access of the entry needed:
-
-    	as sizeof(stt_entry) in our case is 16 Bytes long (see definition of stt_entry),
-    	we are creating size / 16 tt entries. The idea of making the size a power of 2
-    	is important when accessing the table. By 'anding' the hash value and the number
-    	of entries -1 (tt_size), we get a number in the range of 0 and the number of
-    	entries very quickly, this is used to index the entry.
-    */
+    /**************************************************************************
+	*  Check if size is a power of 2. If not, make it the next lower power    *
+	*  of 2. This allows for a faster access of the entry needed:             *
+	*  as sizeof(stt_entry) in our case is 16 Bytes long (see definition of   *
+	*  stt_entry), we are creating size / 16 tt entries. The idea of making   *
+	*  the size a power of 2 is important for accessing the table. By 'anding'*
+	*  the hash value and the number of entries -1 (tt_size), we get a number *
+	*  in the range between 0 and the number of entries very quickly. This    *
+	*  number is used to index the entry.                                     *
+    **************************************************************************/
 
     free(tt);
 

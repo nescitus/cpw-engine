@@ -21,19 +21,19 @@ static const int SafetyTable[100] = {
     500, 500, 500, 500, 500, 500, 500, 500, 500, 500
 };
 
-/*******************************************************************
-*  This struct holds data about certain aspects of evaluation,     *
-*  which allows program to print them if desired.                  *
-*******************************************************************/
+/******************************************************************************
+*  This struct holds data about certain aspects of evaluation, which allows   *
+*  our program to print them if desired.                                      *
+******************************************************************************/
 
 struct eval_vector {
-    int gamePhase;
-    int mgMob[2];
-    int egMob[2];
-    int attCnt[2];
-    int attWeight[2];
-	int mgTropism[2];
-	int egTropism[2];
+    int gamePhase;   // function of piece material: 24 in opening, 0 in endgame
+    int mgMob[2];     // midgame mobility
+    int egMob[2];     // endgame mobility
+    int attCnt[2];    // no. of pieces attacking zone around enemy king
+    int attWeight[2]; // weight of attacking pieces - index to SafetyTable
+	int mgTropism[2]; // midgame king tropism score
+	int egTropism[2]; // endgame king tropism score
     int kingShield[2];
     int MaterialAdjustement[2];
     int Blockages[2];
@@ -76,9 +76,9 @@ int eval( int alpha, int beta, int use_hash ) {
 	**************************************************************************/
 
     mgScore = b.PieceMaterial[WHITE] + b.PawnMaterial[WHITE] + b.PcsqMg[WHITE]
-              - b.PieceMaterial[BLACK] - b.PawnMaterial[BLACK] - b.PcsqMg[BLACK];
+            - b.PieceMaterial[BLACK] - b.PawnMaterial[BLACK] - b.PcsqMg[BLACK];
     egScore = b.PieceMaterial[WHITE] + b.PawnMaterial[WHITE] + b.PcsqEg[WHITE]
-              - b.PieceMaterial[BLACK] - b.PawnMaterial[BLACK] - b.PcsqEg[BLACK];
+            - b.PieceMaterial[BLACK] - b.PawnMaterial[BLACK] - b.PcsqEg[BLACK];
 
     /* add king's pawn shield score and evaluate part of piece blockage score
     (the rest of the latter will be done via piece eval) */
@@ -466,17 +466,21 @@ void EvalRook(S8 sq, S8 side) {
     }
 
     /**************************************************************************
-    *  Bonus for open and half-open files is merged with mobility score       *
+    *  Bonus for open and half-open files is merged with mobility score.      *
+	*  Bonus for open files targetting enemy king is added to attWeight[]     *
     /*************************************************************************/
 
     if ( !ownBlockingPawns ) {
-
         if ( !oppBlockingPawns ) {
             v.mgMob[side] += e.ROOK_OPEN;
             v.egMob[side] += e.ROOK_OPEN;
+			if (abs(COL(sq) - COL(b.KingLoc[!side])) < 2) 
+			   v.attWeight[side] += 1;
         } else {
             v.mgMob[side] += e.ROOK_HALF;
             v.egMob[side] += e.ROOK_HALF;
+			if (abs(COL(sq) - COL(b.KingLoc[!side])) < 2) 
+			   v.attWeight[side] += 2;
         }
     }
 

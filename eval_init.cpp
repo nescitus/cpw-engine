@@ -315,8 +315,7 @@ void setSquaresNearKing() {
 
             if (IS_SQ(i) && IS_SQ(j)) {
 
-                // squares constituting the ring around both kings
-
+                /* squares constituting the ring around both kings */
                 if (j == i + NORTH || j == i + SOUTH 
 				||  j == i + EAST  || j == i + WEST 
 				||  j == i + NW    || j == i + NE 
@@ -327,14 +326,12 @@ void setSquaresNearKing() {
                 }
 
                 /* squares in front of the white king ring */
-
                 if (j == i + NORTH + NORTH 
 				||  j == i + NORTH + NE 
 				||  j == i + NORTH + NW)
                     e.sqNearK[WHITE][i][j] = 1;
 
-                // squares in front og the black king ring
-
+                /* squares in front og the black king ring */
                 if (j == i + SOUTH + SOUTH 
 				||  j == i + SOUTH + SE 
 				||  j == i + SOUTH + SW)

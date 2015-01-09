@@ -18,52 +18,50 @@ char vector[5][8] = {
 
 
 //returns movecount
-U8 movegen(smove * moves, U8 tt_move, bool captures) {
+U8 movegen(smove * moves, U8 tt_move) {
 
     m = moves;
 
     movecount = 0;
 
-    if (!captures) {
         //Castling
         if ( b.stm == WHITE ) {
             if ( b.castle & CASTLE_WK ) {
-                if ( ( b.pieces[F1] == PIECE_EMPTY ) &&
-                        ( b.pieces[G1] == PIECE_EMPTY ) &&
-                        ( !isAttacked(!b.stm,E1) ) &&
-                        ( !isAttacked(!b.stm,F1) ) &&
-                        ( !isAttacked(!b.stm,G1) ) )
+                if ( ( b.pieces[F1] == PIECE_EMPTY ) 
+				&&   ( b.pieces[G1] == PIECE_EMPTY ) 
+				&&   ( !isAttacked(!b.stm,E1) ) 
+				&&   ( !isAttacked(!b.stm,F1) ) 
+				&&   ( !isAttacked(!b.stm,G1) ) )
                     movegen_push(E1,G1,KING,PIECE_EMPTY,MFLAG_CASTLE);
             }
             if ( b.castle & CASTLE_WQ ) {
-                if ( ( b.pieces[B1] == PIECE_EMPTY ) &&
-                        ( b.pieces[C1] == PIECE_EMPTY ) &&
-                        ( b.pieces[D1] == PIECE_EMPTY ) &&
-                        ( !isAttacked(!b.stm,E1) ) &&
-                        ( !isAttacked(!b.stm,D1) ) &&
-                        ( !isAttacked(!b.stm,C1) ) )
+                if ( ( b.pieces[B1] == PIECE_EMPTY ) 
+				&&   ( b.pieces[C1] == PIECE_EMPTY ) 
+				&&   ( b.pieces[D1] == PIECE_EMPTY ) 
+				&&   ( !isAttacked(!b.stm,E1) ) 
+				&&   ( !isAttacked(!b.stm,D1) ) 
+				&&   ( !isAttacked(!b.stm,C1) ) )
                     movegen_push(E1,C1,KING,PIECE_EMPTY,MFLAG_CASTLE);
             }
         } else {
             if ( b.castle & CASTLE_BK ) {
-                if ( ( b.pieces[F8] == PIECE_EMPTY ) &&
-                        ( b.pieces[G8] == PIECE_EMPTY ) &&
-                        ( !isAttacked(!b.stm,E8) ) &&
-                        ( !isAttacked(!b.stm,F8) ) &&
-                        ( !isAttacked(!b.stm,G8) ) )
+                if ( ( b.pieces[F8] == PIECE_EMPTY ) 
+				&&   ( b.pieces[G8] == PIECE_EMPTY ) 
+				&&   ( !isAttacked(!b.stm,E8) ) 
+				&&   ( !isAttacked(!b.stm,F8) ) 
+				&&   ( !isAttacked(!b.stm,G8) ) )
                     movegen_push(E8,G8,KING,PIECE_EMPTY,MFLAG_CASTLE);
             }
             if ( b.castle & CASTLE_BQ ) {
-                if ( ( b.pieces[B8] == PIECE_EMPTY ) &&
-                        ( b.pieces[C8] == PIECE_EMPTY ) &&
-                        ( b.pieces[D8] == PIECE_EMPTY ) &&
-                        ( !isAttacked(!b.stm,E8) ) &&
-                        ( !isAttacked(!b.stm,D8) ) &&
-                        ( !isAttacked(!b.stm,C8) ) )
+                if ( ( b.pieces[B8] == PIECE_EMPTY ) 
+				&&   ( b.pieces[C8] == PIECE_EMPTY ) 
+				&&   ( b.pieces[D8] == PIECE_EMPTY ) 
+				&&   ( !isAttacked(!b.stm,E8) ) 
+				&&   ( !isAttacked(!b.stm,D8) ) 
+				&&   ( !isAttacked(!b.stm,C8) ) )
                     movegen_push(E8,C8,KING,PIECE_EMPTY,MFLAG_CASTLE);
             }
         }
-    }
 
 
     for (S8 sq=0; sq<120; sq++) {
@@ -71,7 +69,7 @@ U8 movegen(smove * moves, U8 tt_move, bool captures) {
         if (b.color[sq] == b.stm) {
 
             if (b.pieces[sq] == PAWN) {
-                movegen_pawn_move(sq, captures);
+                movegen_pawn_move(sq, 0);
                 movegen_pawn_capt(sq);
             } else {
 				assert(b.pieces[sq] < (sizeof vectors / sizeof vectors[0]) && b.pieces[sq] >= 0);
@@ -84,7 +82,6 @@ U8 movegen(smove * moves, U8 tt_move, bool captures) {
                         if (! IS_SQ(pos)) break;
 
                         if (b.pieces[pos] == PIECE_EMPTY) {
-                            if (!captures)
                                 movegen_push(sq, pos, b.pieces[sq], PIECE_EMPTY, MFLAG_NORMAL);
 						} else {
 							if (b.color[pos] != b.stm) 
@@ -149,7 +146,7 @@ U8 movegen_qs(smove * moves) {
 void movegen_pawn_move(S8 sq, bool promotion_only) {
 
     if ( b.stm == WHITE ) {
-        if (promotion_only && (ROW(sq) < 7)) return;
+        if (promotion_only && (ROW(sq) != ROW_7)) return;
 
         if (b.pieces[sq+NORTH] == PIECE_EMPTY) {
             movegen_push(sq, sq+NORTH, PAWN, PIECE_EMPTY, MFLAG_NORMAL);
@@ -159,7 +156,7 @@ void movegen_pawn_move(S8 sq, bool promotion_only) {
                  movegen_push(sq, sq+NN, PAWN, PIECE_EMPTY, MFLAG_EP);   
         }
     } else {
-        if (promotion_only && (ROW(sq) > 1)) return;
+        if (promotion_only && (ROW(sq) != ROW_2)) return;
 
         if (b.pieces[sq+SOUTH] == PIECE_EMPTY) {
             movegen_push(sq, sq+SOUTH, PAWN, PIECE_EMPTY, MFLAG_NORMAL);
@@ -227,7 +224,7 @@ void movegen_push(char from, char to, U8 piece_from, U8 piece_cap, char flags) {
 	* Put all four possible promotion moves on the list and score them.       *
 	**************************************************************************/
 
-    if ((piece_from == PAWN) && ( (ROW(to)==0)||(ROW(to)==7) )) {
+    if ((piece_from == PAWN) && ( (ROW(to)==ROW_1)||(ROW(to)==ROW_8) )) {
         m[movecount].flags |= MFLAG_PROMOTION;
 
         for (char prompiece = QUEEN; prompiece <= KNIGHT; prompiece++) {

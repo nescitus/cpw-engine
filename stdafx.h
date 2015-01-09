@@ -228,7 +228,7 @@ int com_ismove(char * command);
 
 
 
-U8 movegen(smove * moves, U8 tt_move, bool captures = false);
+U8 movegen(smove * moves, U8 tt_move);
 U8 movegen_qs(smove * moves);
 void movegen_sort(U8 movecount, smove * m, U8 current);
 
