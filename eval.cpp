@@ -4,6 +4,19 @@
 #include "eval.h"
 #include "transposition.h"
 
+int inv_sq[128] = {
+	    A8, B8, C8, D8, E8, F8, G8, H8, -1, -1, -1, -1, -1, -1, -1, -1,
+		A7, B7, C7, D7, E7, F7, G7, H7, -1, -1, -1, -1, -1, -1, -1, -1,
+		A6, B6, C6, D6, E6, F6, G6, H6, -1, -1, -1, -1, -1, -1, -1, -1,
+		A5, B5, C5, D5, E5, F5, G5, H5, -1, -1, -1, -1, -1, -1, -1, -1,
+		A4, B4, C4, D4, E4, F4, G4, H4, -1, -1, -1, -1, -1, -1, -1, -1,
+		A3, B3, C3, D3, E3, F3, G3, H3, -1, -1, -1, -1, -1, -1, -1, -1,
+		A2, B2, C2, D2, E2, F2, G2, H2, -1, -1, -1, -1, -1, -1, -1, -1,
+		A1, B1, C1, D1, E1, F1, G1, H1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+
+#define REL_SQ(cl, sq)       ((cl) == (WHITE) ? (sq) : (inv_sq[sq]))
+
 /* adjustements of piece value based on the number of own pawns */
 int knight_adj[9] = { -20, -16, -12, -8, -4,  0,  4,  8, 12};
 int rook_adj[9] =   {  15,  12,   9,  6,  3,  0, -3, -6, -9};
@@ -80,11 +93,15 @@ int eval( int alpha, int beta, int use_hash ) {
     egScore = b.PieceMaterial[WHITE] + b.PawnMaterial[WHITE] + b.PcsqEg[WHITE]
             - b.PieceMaterial[BLACK] - b.PawnMaterial[BLACK] - b.PcsqEg[BLACK];
 
-    /* add king's pawn shield score and evaluate part of piece blockage score
-    (the rest of the latter will be done via piece eval) */
+    /************************************************************************** 
+	* add king's pawn shield score and evaluate part of piece blockage score  *
+    * (the rest of the latter will be done via piece eval)                    *
+	**************************************************************************/
+
     v.kingShield[WHITE] = wKingShield();
     v.kingShield[BLACK] = bKingShield();
-    blockedPieces();
+    blockedPieces(WHITE);
+	blockedPieces(BLACK);
     mgScore += (v.kingShield[WHITE] - v.kingShield[BLACK]);
 
     /* tempo bonus */
@@ -537,19 +554,12 @@ void EvalQueen(S8 sq, S8 side) {
     *  A queen should not be developed too early                              *
     **************************************************************************/
 
-    if (side == WHITE && ROW(sq) > ROW_2) {
-        if (isPiece(WHITE, KNIGHT, B1)) v.PositionalThemes[WHITE] -= 2;
-        if (isPiece(WHITE, BISHOP, C1)) v.PositionalThemes[WHITE] -= 2;
-        if (isPiece(WHITE, BISHOP, F1)) v.PositionalThemes[WHITE] -= 2;
-        if (isPiece(WHITE, KNIGHT, G1)) v.PositionalThemes[WHITE] -= 2;
-    }
-
-    if (side == BLACK && ROW(sq) < ROW_7) {
-        if (isPiece(BLACK, KNIGHT, B8)) v.PositionalThemes[BLACK] -= 2;
-        if (isPiece(BLACK, BISHOP, C8)) v.PositionalThemes[BLACK] -= 2;
-        if (isPiece(BLACK, BISHOP, F8)) v.PositionalThemes[BLACK] -= 2;
-        if (isPiece(BLACK, KNIGHT, G8)) v.PositionalThemes[BLACK] -= 2;
-    }
+	if ((side == WHITE && ROW(sq) > ROW_2) || (side == BLACK && ROW(sq) < ROW_7)) {
+		if (isPiece(side, KNIGHT, REL_SQ(side,B1))) v.PositionalThemes[side] -= 2;
+		if (isPiece(side, BISHOP, REL_SQ(side,C1))) v.PositionalThemes[side] -= 2;
+		if (isPiece(side, BISHOP, REL_SQ(side,F1))) v.PositionalThemes[side] -= 2;
+		if (isPiece(side, KNIGHT, REL_SQ(side,G1))) v.PositionalThemes[side] -= 2;
+	}
 
     /**************************************************************************
     *  Collect data about mobility and king attacks                           *
@@ -807,38 +817,24 @@ int isPawnSupported(S8 sq, S8 side) {
 *                             Pattern detection                               *
 ******************************************************************************/
 
-void blockedPieces() {
+void blockedPieces(int side) {
 
     // central pawn blocked, bishop hard to develop
-    if (isPiece(WHITE, BISHOP, C1) && isPiece(WHITE, PAWN, D2) && b.color[D3] != COLOR_EMPTY)
-        v.Blockages[WHITE] -= e.P_BLOCK_CENTRAL_PAWN;
-    if (isPiece(WHITE, BISHOP, F1) &&  isPiece(WHITE, PAWN, E2) && b.color[E3] != COLOR_EMPTY)
-        v.Blockages[WHITE] -= e.P_BLOCK_CENTRAL_PAWN;
-    if (isPiece(BLACK, BISHOP, C8) &&  isPiece(BLACK, PAWN, D7) && b.color[D6] != COLOR_EMPTY)
-        v.Blockages[BLACK] -= e.P_BLOCK_CENTRAL_PAWN;
-    if (isPiece(BLACK, BISHOP, F8) && isPiece(BLACK, PAWN, E7) && b.color[E6] != COLOR_EMPTY)
-        v.Blockages[BLACK] -= e.P_BLOCK_CENTRAL_PAWN;
+    if (isPiece(side, BISHOP, REL_SQ(side,C1)) && isPiece(side, PAWN, REL_SQ(side,D2)) && b.color[REL_SQ(side,D3)] != COLOR_EMPTY)
+        v.Blockages[side] -= e.P_BLOCK_CENTRAL_PAWN;
+	if (isPiece(side, BISHOP, REL_SQ(side,F1)) && isPiece(side, PAWN, REL_SQ(side,E2)) && b.color[REL_SQ(side,E3)] != COLOR_EMPTY)
+		v.Blockages[side] -= e.P_BLOCK_CENTRAL_PAWN;
 
     // uncastled king blocking own rook
-    if ( ( isPiece(WHITE, KING, F1) || isPiece(WHITE, KING, G1 ) )&&
-            ( isPiece(WHITE, ROOK, H1) || isPiece(WHITE, ROOK, G1 ) )
+    if ( ( isPiece(side, KING, REL_SQ(side,F1)) || isPiece(side, KING, REL_SQ(side,G1) ) )
+	&&   ( isPiece(side, ROOK, REL_SQ(side,H1)) || isPiece(side, ROOK, REL_SQ(side,G1) ) )
        )
-        v.Blockages[WHITE] -= e.P_KING_BLOCKS_ROOK;
+        v.Blockages[side] -= e.P_KING_BLOCKS_ROOK;
 
-    if ( ( isPiece(WHITE, KING, C1) || isPiece(WHITE, KING, B1 ) )&&
-            ( isPiece(WHITE, ROOK, A1) || isPiece(WHITE, ROOK, B1 ) )
-       )
-        v.Blockages[WHITE] -= e.P_KING_BLOCKS_ROOK;
-
-    if ( ( isPiece(BLACK, KING, F8) || isPiece(BLACK, KING, G8 ) )&&
-            ( isPiece(BLACK, ROOK, H8) || isPiece(BLACK, ROOK, G8 ) )
-       )
-        v.Blockages[BLACK] -= e.P_KING_BLOCKS_ROOK;
-
-    if ( ( isPiece(BLACK, KING, C8) || isPiece(BLACK, KING, B8 ) )&&
-            ( isPiece(BLACK, ROOK, A8) || isPiece(BLACK, ROOK, B8 ) )
-       )
-        v.Blockages[BLACK] -= e.P_KING_BLOCKS_ROOK;
+	if ((isPiece(side, KING, REL_SQ(side,C1)) || isPiece(side, KING, REL_SQ(side,B1)))
+	&&  (isPiece(side, ROOK, REL_SQ(side,A1)) || isPiece(side, ROOK, REL_SQ(side,B1)))
+		)
+		v.Blockages[side] -= e.P_KING_BLOCKS_ROOK;
 }
 
 int isPiece(U8 color, U8 piece, S8 sq) {
