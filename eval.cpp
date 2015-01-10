@@ -300,70 +300,12 @@ void EvalKnight(S8 sq, S8 side) {
 	int tropism = getTropism(sq, b.KingLoc[!side]);
 	v.mgTropism[side] += 3 * tropism;
 	v.egTropism[side] += 3 * tropism;
-
 }
 
 void EvalBishop(S8 sq, S8 side) {
     int att = 0;
     int mob = 0;
     v.gamePhase += 1;
-
-    if (side == WHITE) {
-        switch (sq) {
-        case A7:
-            if (isPiece(BLACK, PAWN, B6)) v.Blockages[WHITE] -= e.P_BISHOP_TRAPPED_A7;
-            break;
-        case H7:
-            if (isPiece(BLACK, PAWN, G6)) v.Blockages[WHITE] -= e.P_BISHOP_TRAPPED_A7;
-            break;
-        case B8:
-            if (isPiece(BLACK, PAWN, C7)) v.Blockages[WHITE] -= e.P_BISHOP_TRAPPED_A7;
-            break;
-        case G8:
-            if (isPiece(BLACK, PAWN, F7)) v.Blockages[WHITE] -= e.P_BISHOP_TRAPPED_A7;
-            break;
-        case A6:
-            if (isPiece(BLACK, PAWN, B5)) v.Blockages[WHITE] -= e.P_BISHOP_TRAPPED_A6;
-            break;
-        case H6:
-            if (isPiece(BLACK, PAWN, G5)) v.Blockages[WHITE] -= e.P_BISHOP_TRAPPED_A6;
-            break;
-        case F1:
-            if (isPiece(WHITE, KING, G1)) v.PositionalThemes[WHITE] += e.RETURNING_BISHOP;
-            break;
-        case C1:
-            if (isPiece(WHITE, KING, B1)) v.PositionalThemes[WHITE] += e.RETURNING_BISHOP;
-            break;
-        }
-    }
-    else {
-        switch (sq) {
-        case A2:
-            if (isPiece(WHITE, PAWN, B3)) v.Blockages[BLACK] -= e.P_BISHOP_TRAPPED_A7;
-            break;
-        case H2:
-            if (isPiece(WHITE, PAWN, G3)) v.Blockages[BLACK] -= e.P_BISHOP_TRAPPED_A7;
-            break;
-        case B1:
-            if (isPiece(WHITE, PAWN, C2)) v.Blockages[BLACK] -= e.P_BISHOP_TRAPPED_A7;
-            break;
-        case G1:
-            if (isPiece(WHITE, PAWN, F2)) v.Blockages[BLACK] -= e.P_BISHOP_TRAPPED_A7;
-            break;
-        case A3:
-            if (isPiece(WHITE, PAWN, B4)) v.Blockages[BLACK] -= e.P_BISHOP_TRAPPED_A6;
-            break;
-        case H3:
-            if (isPiece(WHITE, PAWN, G4)) v.Blockages[BLACK] -= e.P_BISHOP_TRAPPED_A6;
-            break;
-        case F8:
-            if (isPiece(BLACK, KING, G8)) v.PositionalThemes[BLACK] += e.RETURNING_BISHOP;
-            break;
-        case C8:
-            if (isPiece(BLACK, KING, B8)) v.PositionalThemes[BLACK] += e.RETURNING_BISHOP;
-            break;
-        }
-    }
 
     /**************************************************************************
     *  Collect data about mobility and king attacks                           *
@@ -794,7 +736,6 @@ void blockedPieces(int side) {
 		v.Blockages[side] -= e.P_BLOCK_CENTRAL_PAWN;
 
 	// trapped knight
- 
 	 if (isPiece(side, KNIGHT, REL_SQ(side,A8) ) 
 	 && (isPiece(oppo, PAWN, REL_SQ(side,A7) ) || isPiece(oppo, PAWN, REL_SQ(side,C7))) ) v.Blockages[side] -= e.P_KNIGHT_TRAPPED_A8;
 
@@ -814,6 +755,32 @@ void blockedPieces(int side) {
 	 && isPiece(side, PAWN, REL_SQ(side, C2))
 	 && isPiece(side, PAWN, REL_SQ(side, D4))
 	 && !isPiece(side, PAWN, REL_SQ(side, E4)) ) v.Blockages[side] -= e.P_C3_KNIGHT;
+
+	 // trapped bishop
+	 if (isPiece(side, BISHOP, REL_SQ(side,A7)) 
+	 &&  isPiece(oppo, PAWN,   REL_SQ(side,B6))) v.Blockages[side] -= e.P_BISHOP_TRAPPED_A7;
+
+	 if (isPiece(side, BISHOP, REL_SQ(side, H7))
+	 && isPiece(oppo, PAWN, REL_SQ(side, G6))) v.Blockages[side] -= e.P_BISHOP_TRAPPED_A7;
+
+	 if (isPiece(side, BISHOP, REL_SQ(side, B8))
+	 && isPiece(oppo, PAWN, REL_SQ(side, C7))) v.Blockages[side] -= e.P_BISHOP_TRAPPED_A7;
+
+	 if (isPiece(side, BISHOP, REL_SQ(side, G8))
+	 && isPiece(oppo, PAWN, REL_SQ(side, F7))) v.Blockages[side] -= e.P_BISHOP_TRAPPED_A7;
+
+	 if (isPiece(side, BISHOP, REL_SQ(side, A6))
+	 && isPiece(oppo, PAWN, REL_SQ(side, B5))) v.Blockages[side] -= e.P_BISHOP_TRAPPED_A6;
+
+	 if (isPiece(side, BISHOP, REL_SQ(side, H6))
+	 && isPiece(oppo, PAWN, REL_SQ(side, G5))) v.Blockages[side] -= e.P_BISHOP_TRAPPED_A6;
+
+	 // bishop on initial sqare supporting castled king
+	 if (isPiece(side, BISHOP, REL_SQ(side, F1))
+	 && isPiece(side, KING, REL_SQ(side, G1))) v.PositionalThemes[side] += e.RETURNING_BISHOP;
+
+	 if (isPiece(side, BISHOP, REL_SQ(side, C1))
+	 && isPiece(side, KING, REL_SQ(side, B1))) v.PositionalThemes[side] += e.RETURNING_BISHOP;
 
     // uncastled king blocking own rook
     if ( ( isPiece(side, KING, REL_SQ(side,F1)) || isPiece(side, KING, REL_SQ(side,G1) ) )
