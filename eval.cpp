@@ -4,6 +4,12 @@
 #include "eval.h"
 #include "transposition.h"
 
+/******************************************************************************
+*  We want our eval to be color-independent, i.e. the same functions ought to *
+*  be called for white and black pieces. This requires some way of converting *
+*  square coordinates.                                                        *
+******************************************************************************/
+
 int inv_sq[128] = {
 	    A8, B8, C8, D8, E8, F8, G8, H8, -1, -1, -1, -1, -1, -1, -1, -1,
 		A7, B7, C7, D7, E7, F7, G7, H7, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -246,46 +252,6 @@ void EvalKnight(S8 sq, S8 side) {
     int mob = 0;
     int pos;
     v.gamePhase += 1;
-
-    if (side == WHITE) {
-        switch (sq) {
-        case A8:
-            if (isPiece(BLACK, PAWN, A7) || isPiece(BLACK, PAWN, C7)) v.Blockages[WHITE] -= e.P_KNIGHT_TRAPPED_A8;
-            break;
-        case H8:
-            if (isPiece(BLACK, PAWN, H7) || isPiece(BLACK, PAWN, F7)) v.Blockages[WHITE] -= e.P_KNIGHT_TRAPPED_A8;
-            break;
-        case A7:
-            if (isPiece(BLACK, PAWN, A6) && isPiece(BLACK, PAWN, B7)) v.Blockages[WHITE] -= e.P_KNIGHT_TRAPPED_A7;
-            break;
-        case H7:
-            if (isPiece(BLACK, PAWN, H6) && isPiece(BLACK, PAWN, G7)) v.Blockages[WHITE] -= e.P_KNIGHT_TRAPPED_A7;
-            break;
-        case C3:
-            if (isPiece(WHITE, PAWN, C2) && isPiece(WHITE, PAWN, D4) && !isPiece(WHITE, PAWN, E4)) v.Blockages[WHITE] -= e.P_C3_KNIGHT;
-            break;
-        }
-    }
-    else
-    {
-        switch (sq) {
-        case A1:
-            if (isPiece(WHITE, PAWN, A2) || isPiece(WHITE, PAWN, C2)) v.Blockages[BLACK] -= e.P_KNIGHT_TRAPPED_A8;
-            break;
-        case H1:
-            if (isPiece(WHITE, PAWN, H2) || isPiece(WHITE, PAWN, F2)) v.Blockages[BLACK] -= e.P_KNIGHT_TRAPPED_A8;
-            break;
-        case A2:
-            if (isPiece(WHITE, PAWN, A3) && isPiece(WHITE, PAWN, B2)) v.Blockages[BLACK] -= e.P_KNIGHT_TRAPPED_A7;
-            break;
-        case H2:
-            if (isPiece(WHITE, PAWN, H3) && isPiece(WHITE, PAWN, G2)) v.Blockages[BLACK] -= e.P_KNIGHT_TRAPPED_A7;
-            break;
-        case C6:
-            if (isPiece(BLACK, PAWN, C7) && isPiece(BLACK, PAWN, D5) && !isPiece(BLACK, PAWN, E5)) v.Blockages[BLACK] -= e.P_C3_KNIGHT;
-            break;
-        }
-    }
 
     /**************************************************************************
     *  Material value adjustement based on the no. of own pawns.              *
@@ -819,11 +785,35 @@ int isPawnSupported(S8 sq, S8 side) {
 
 void blockedPieces(int side) {
 
+	int oppo = !side;
+
     // central pawn blocked, bishop hard to develop
     if (isPiece(side, BISHOP, REL_SQ(side,C1)) && isPiece(side, PAWN, REL_SQ(side,D2)) && b.color[REL_SQ(side,D3)] != COLOR_EMPTY)
         v.Blockages[side] -= e.P_BLOCK_CENTRAL_PAWN;
 	if (isPiece(side, BISHOP, REL_SQ(side,F1)) && isPiece(side, PAWN, REL_SQ(side,E2)) && b.color[REL_SQ(side,E3)] != COLOR_EMPTY)
 		v.Blockages[side] -= e.P_BLOCK_CENTRAL_PAWN;
+
+	// trapped knight
+ 
+	 if (isPiece(side, KNIGHT, REL_SQ(side,A8) ) 
+	 && (isPiece(oppo, PAWN, REL_SQ(side,A7) ) || isPiece(oppo, PAWN, REL_SQ(side,C7))) ) v.Blockages[side] -= e.P_KNIGHT_TRAPPED_A8;
+
+	 if (isPiece(side, KNIGHT, REL_SQ(side,H8))
+	 && (isPiece(oppo, PAWN, REL_SQ(side,H7)) || isPiece(oppo, PAWN, REL_SQ(side,F7)))) v.Blockages[side] -= e.P_KNIGHT_TRAPPED_A8;
+ 
+	 if (isPiece(side, KNIGHT, REL_SQ(side, A7))
+	 &&  isPiece(oppo, PAWN, REL_SQ(side,A6)) 
+	 &&  isPiece(oppo, PAWN, REL_SQ(side,B7))) v.Blockages[side] -= e.P_KNIGHT_TRAPPED_A7;
+
+	 if (isPiece(side, KNIGHT, REL_SQ(side, H7))
+	 && isPiece (oppo, PAWN, REL_SQ(side, H6))
+	 && isPiece (oppo, PAWN, REL_SQ(side, G7))) v.Blockages[side] -= e.P_KNIGHT_TRAPPED_A7;
+
+	 // knight blocking queenside pawns
+	 if (isPiece(side, KNIGHT, REL_SQ(side, C3))
+	 && isPiece(side, PAWN, REL_SQ(side, C2))
+	 && isPiece(side, PAWN, REL_SQ(side, D4))
+	 && !isPiece(side, PAWN, REL_SQ(side, E4)) ) v.Blockages[side] -= e.P_C3_KNIGHT;
 
     // uncastled king blocking own rook
     if ( ( isPiece(side, KING, REL_SQ(side,F1)) || isPiece(side, KING, REL_SQ(side,G1) ) )

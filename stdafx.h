@@ -22,12 +22,7 @@
 #define S8  signed   __int8
 
 
-
-/* Move ordering compiler switches and constants */
-
-#define USE_HASHMOVE
-#define USE_HISTORY
-#define USE_KILLERS
+/* Move ordering constants */
 
 #define SORT_KING 400000000
 #define SORT_HASH 200000000

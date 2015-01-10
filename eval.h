@@ -16,4 +16,4 @@ int isWPSupported(S8 sq);
 int isBPSupported(S8 sq);
 
 /* pattern detection */
-void blockedPieces();
+void blockedPieces(int side);
