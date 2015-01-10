@@ -85,8 +85,8 @@ int eval( int alpha, int beta, int use_hash ) {
 		v.mgTropism[side] = 0;
 		v.egTropism[side] = 0;
 		v.adjustMaterial[side] = 0;
-		v.Blockages[side] = 0;
-		v.PositionalThemes[side] = 0;
+		v.blockages[side] = 0;
+		v.positionalThemes[side] = 0;
 		v.kingShield[side] = 0;
 	}
 
@@ -185,8 +185,8 @@ int eval( int alpha, int beta, int use_hash ) {
     *  Add phase-independent score components.                                *
     **************************************************************************/
 
-    result += (v.Blockages[WHITE] - v.Blockages[BLACK]);
-    result += (v.PositionalThemes[WHITE] - v.PositionalThemes[BLACK]);
+    result += (v.blockages[WHITE] - v.blockages[BLACK]);
+    result += (v.positionalThemes[WHITE] - v.positionalThemes[BLACK]);
 	result += (v.adjustMaterial[WHITE] - v.adjustMaterial[BLACK]);
 
     /**************************************************************************
@@ -439,10 +439,10 @@ void EvalQueen(S8 sq, S8 side) {
     **************************************************************************/
 
 	if ((side == WHITE && ROW(sq) > ROW_2) || (side == BLACK && ROW(sq) < ROW_7)) {
-		if (isPiece(side, KNIGHT, REL_SQ(side,B1))) v.PositionalThemes[side] -= 2;
-		if (isPiece(side, BISHOP, REL_SQ(side,C1))) v.PositionalThemes[side] -= 2;
-		if (isPiece(side, BISHOP, REL_SQ(side,F1))) v.PositionalThemes[side] -= 2;
-		if (isPiece(side, KNIGHT, REL_SQ(side,G1))) v.PositionalThemes[side] -= 2;
+		if (isPiece(side, KNIGHT, REL_SQ(side,B1))) v.positionalThemes[side] -= 2;
+		if (isPiece(side, BISHOP, REL_SQ(side,C1))) v.positionalThemes[side] -= 2;
+		if (isPiece(side, BISHOP, REL_SQ(side,F1))) v.positionalThemes[side] -= 2;
+		if (isPiece(side, KNIGHT, REL_SQ(side,G1))) v.positionalThemes[side] -= 2;
 	}
 
     /**************************************************************************
