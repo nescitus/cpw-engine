@@ -35,9 +35,9 @@ smove move_to_make;	 // move to be returned when search runs out of time
 
 void search_run() {
 
-    //if ( chronos.flags & (FTIME | FINC | FMOVESTOGO) ) {
-    //	if ( getBookMove(BOOK_BROAD) ) return;
-    //}
+    if ( chronos.flags & (FTIME | FINC | FMOVESTOGO) ) {
+    	if ( getBookMove(BOOK_BROAD) ) return;
+    }
 
     search_clearDriver();
     time_calc_movetime();
@@ -67,11 +67,9 @@ void search_iterate() {
     int val;
 
     // check the exact number of legal moves in the current position
-
     int move_count = move_countLegal();
 
     // do a full-window 1-ply search to get the first estimate of val
-
     sd.depth = 1;
     val = search_root( sd.depth, -INF, INF );
 
@@ -114,7 +112,6 @@ int search_root( U8 depth, int alpha, int beta ) {
     U8 currmove_legal = 0;
 
     /* Check  extension is done also at  the  root */
-
     flagInCheck = isAttacked( !b.stm, b.KingLoc[b.stm] );
     if ( flagInCheck ) ++depth;
 
@@ -320,7 +317,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         char R = 2;
         if ( depth > 6 ) R = 3;
 
-        val = -Search( depth - R - 1, ply, -beta, -beta+1, NO_NULL, NO_PV );
+		val = -Search(depth - R - 1, ply + 1, -beta, -beta + 1, NO_NULL, NO_PV);
 
         move_unmakeNull(ep_old);
 
