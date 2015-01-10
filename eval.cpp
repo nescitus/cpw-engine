@@ -24,8 +24,8 @@ int inv_sq[128] = {
 #define REL_SQ(cl, sq)       ((cl) == (WHITE) ? (sq) : (inv_sq[sq]))
 
 /* adjustements of piece value based on the number of own pawns */
-int knight_adj[9] = { -20, -16, -12, -8, -4,  0,  4,  8, 12};
-int rook_adj[9] =   {  15,  12,   9,  6,  3,  0, -3, -6, -9};
+int n_adj[9] = { -20, -16, -12, -8, -4,  0,  4,  8, 12};
+int r_adj[9] = {  15,  12,   9,  6,  3,  0, -3, -6, -9};
 
 static const int SafetyTable[100] = {
      0,  0,   1,   2,   3,   5,   7,   9,  12,  15,
@@ -54,9 +54,9 @@ struct eval_vector {
 	int mgTropism[2]; // midgame king tropism score
 	int egTropism[2]; // endgame king tropism score
     int kingShield[2];
-    int MaterialAdjustement[2];
-    int Blockages[2];
-    int PositionalThemes[2];
+    int adjustMaterial[2];
+    int blockages[2];
+    int positionalThemes[2];
 } v;
 
 int eval( int alpha, int beta, int use_hash ) {
@@ -84,7 +84,7 @@ int eval( int alpha, int beta, int use_hash ) {
 		v.attWeight[side] = 0;
 		v.mgTropism[side] = 0;
 		v.egTropism[side] = 0;
-		v.MaterialAdjustement[side] = 0;
+		v.adjustMaterial[side] = 0;
 		v.Blockages[side] = 0;
 		v.PositionalThemes[side] = 0;
 		v.kingShield[side] = 0;
@@ -117,17 +117,21 @@ int eval( int alpha, int beta, int use_hash ) {
     /**************************************************************************
     *  Adjusting material value for the various combinations of pieces.       *
     *  Currently it scores bishop, knight and rook pairs. The first one       *
-    *  gets a bonus, the latter two - a penalty. Please also note that        *
-    *  adjustements of knight and rook value based on the number of own       *
-    *  pawns on the board are done within the piece-specific routines.        *
+    *  gets a bonus, the latter two - a penalty. Beside that knights lose     *
+	*  value as pawns disappear, whereas rooks gain.                          *
     **************************************************************************/
 
-    if ( b.PieceCount[WHITE][BISHOP] > 1 ) result += e.BISHOP_PAIR;
-    if ( b.PieceCount[BLACK][BISHOP] > 1 ) result -= e.BISHOP_PAIR;
-    if ( b.PieceCount[WHITE][KNIGHT] > 1 ) result -= e.P_KNIGHT_PAIR;
-    if ( b.PieceCount[BLACK][KNIGHT] > 1 ) result += e.P_KNIGHT_PAIR;
-    if ( b.PieceCount[WHITE]  [ROOK] > 1 ) result -= e.P_ROOK_PAIR;
-    if ( b.PieceCount[BLACK]  [ROOK] > 1 ) result += e.P_ROOK_PAIR;
+	if (b.PieceCount[WHITE][BISHOP] > 1) v.adjustMaterial[WHITE] += e.BISHOP_PAIR;
+	if (b.PieceCount[BLACK][BISHOP] > 1) v.adjustMaterial[BLACK] += e.BISHOP_PAIR;
+	if (b.PieceCount[WHITE][KNIGHT] > 1) v.adjustMaterial[WHITE] -= e.P_KNIGHT_PAIR;
+	if (b.PieceCount[BLACK][KNIGHT] > 1) v.adjustMaterial[BLACK] -= e.P_KNIGHT_PAIR;
+	if (b.PieceCount[WHITE][ROOK] > 1  ) v.adjustMaterial[WHITE] -= e.P_ROOK_PAIR;
+	if (b.PieceCount[BLACK][ROOK] > 1  ) v.adjustMaterial[BLACK] -= e.P_ROOK_PAIR;
+
+	v.adjustMaterial[WHITE] += n_adj[b.PieceCount[WHITE][PAWN]] * b.PieceCount[WHITE][KNIGHT];
+	v.adjustMaterial[BLACK] += n_adj[b.PieceCount[BLACK][PAWN]] * b.PieceCount[BLACK][KNIGHT];
+	v.adjustMaterial[WHITE] += r_adj[b.PieceCount[WHITE][PAWN]] * b.PieceCount[WHITE][ROOK];
+	v.adjustMaterial[BLACK] += r_adj[b.PieceCount[BLACK][PAWN]] * b.PieceCount[BLACK][ROOK];
 
     result += getPawnScore();
 
@@ -183,7 +187,7 @@ int eval( int alpha, int beta, int use_hash ) {
 
     result += (v.Blockages[WHITE] - v.Blockages[BLACK]);
     result += (v.PositionalThemes[WHITE] - v.PositionalThemes[BLACK]);
-    result += (v.MaterialAdjustement[WHITE] - v.MaterialAdjustement[BLACK]);
+	result += (v.adjustMaterial[WHITE] - v.adjustMaterial[BLACK]);
 
     /**************************************************************************
     *  Merge king attack score. We don't apply this value if there are less   *
@@ -252,13 +256,6 @@ void EvalKnight(S8 sq, S8 side) {
     int mob = 0;
     int pos;
     v.gamePhase += 1;
-
-    /**************************************************************************
-    *  Material value adjustement based on the no. of own pawns.              *
-    *  Knights lose value as pawns disappear.                                 *
-    **************************************************************************/
-
-    v.MaterialAdjustement[side] += knight_adj[b.PieceCount[side][PAWN]];
 
     /**************************************************************************
     *  Collect data about mobility and king attacks. This resembles move      *
@@ -354,13 +351,6 @@ void EvalRook(S8 sq, S8 side) {
     int nextSq;
 
     v.gamePhase += 2;
-
-    /**************************************************************************
-    *  Material value adjustement based on the no. of own pawns.              *
-    *  Rooks gain value as pawns disappear.                                   *
-    **************************************************************************/
-
-    v.MaterialAdjustement[side] += rook_adj[b.PieceCount[side][PAWN]];
 
     /**************************************************************************
     *  An ugly hack to detect open files. Merging it with mobility eval would *
@@ -706,68 +696,84 @@ void blockedPieces(int side) {
 	int oppo = !side;
 
     // central pawn blocked, bishop hard to develop
-    if (isPiece(side, BISHOP, REL_SQ(side,C1)) && isPiece(side, PAWN, REL_SQ(side,D2)) && b.color[REL_SQ(side,D3)] != COLOR_EMPTY)
-        v.Blockages[side] -= e.P_BLOCK_CENTRAL_PAWN;
-	if (isPiece(side, BISHOP, REL_SQ(side,F1)) && isPiece(side, PAWN, REL_SQ(side,E2)) && b.color[REL_SQ(side,E3)] != COLOR_EMPTY)
-		v.Blockages[side] -= e.P_BLOCK_CENTRAL_PAWN;
+    if (isPiece(side, BISHOP, REL_SQ(side,C1)) 
+	&& isPiece(side, PAWN, REL_SQ(side,D2)) 
+	&& b.color[REL_SQ(side,D3)] != COLOR_EMPTY)
+       v.blockages[side] -= e.P_BLOCK_CENTRAL_PAWN;
+
+	if (isPiece(side, BISHOP, REL_SQ(side,F1)) 
+	&& isPiece(side, PAWN, REL_SQ(side,E2)) 
+	&& b.color[REL_SQ(side,E3)] != COLOR_EMPTY)
+	   v.blockages[side] -= e.P_BLOCK_CENTRAL_PAWN;
 
 	// trapped knight
 	 if (isPiece(side, KNIGHT, REL_SQ(side,A8) ) 
-	 && (isPiece(oppo, PAWN, REL_SQ(side,A7) ) || isPiece(oppo, PAWN, REL_SQ(side,C7))) ) v.Blockages[side] -= e.P_KNIGHT_TRAPPED_A8;
+	 && (isPiece(oppo, PAWN, REL_SQ(side,A7) ) || isPiece(oppo, PAWN, REL_SQ(side,C7)))) 
+	 v.blockages[side] -= e.P_KNIGHT_TRAPPED_A8;
 
 	 if (isPiece(side, KNIGHT, REL_SQ(side,H8))
-	 && (isPiece(oppo, PAWN, REL_SQ(side,H7)) || isPiece(oppo, PAWN, REL_SQ(side,F7)))) v.Blockages[side] -= e.P_KNIGHT_TRAPPED_A8;
+	 && (isPiece(oppo, PAWN, REL_SQ(side,H7)) || isPiece(oppo, PAWN, REL_SQ(side,F7)))) 
+	     v.blockages[side] -= e.P_KNIGHT_TRAPPED_A8;
  
 	 if (isPiece(side, KNIGHT, REL_SQ(side, A7))
 	 &&  isPiece(oppo, PAWN, REL_SQ(side,A6)) 
-	 &&  isPiece(oppo, PAWN, REL_SQ(side,B7))) v.Blockages[side] -= e.P_KNIGHT_TRAPPED_A7;
+	 &&  isPiece(oppo, PAWN, REL_SQ(side,B7))) 
+	     v.blockages[side] -= e.P_KNIGHT_TRAPPED_A7;
 
 	 if (isPiece(side, KNIGHT, REL_SQ(side, H7))
 	 && isPiece (oppo, PAWN, REL_SQ(side, H6))
-	 && isPiece (oppo, PAWN, REL_SQ(side, G7))) v.Blockages[side] -= e.P_KNIGHT_TRAPPED_A7;
+	 && isPiece (oppo, PAWN, REL_SQ(side, G7))) 
+	    v.blockages[side] -= e.P_KNIGHT_TRAPPED_A7;
 
 	 // knight blocking queenside pawns
 	 if (isPiece(side, KNIGHT, REL_SQ(side, C3))
 	 && isPiece(side, PAWN, REL_SQ(side, C2))
 	 && isPiece(side, PAWN, REL_SQ(side, D4))
-	 && !isPiece(side, PAWN, REL_SQ(side, E4)) ) v.Blockages[side] -= e.P_C3_KNIGHT;
+	 && !isPiece(side, PAWN, REL_SQ(side, E4)) ) 
+	    v.blockages[side] -= e.P_C3_KNIGHT;
 
 	 // trapped bishop
 	 if (isPiece(side, BISHOP, REL_SQ(side,A7)) 
-	 &&  isPiece(oppo, PAWN,   REL_SQ(side,B6))) v.Blockages[side] -= e.P_BISHOP_TRAPPED_A7;
+	 &&  isPiece(oppo, PAWN,   REL_SQ(side,B6))) 
+	     v.blockages[side] -= e.P_BISHOP_TRAPPED_A7;
 
 	 if (isPiece(side, BISHOP, REL_SQ(side, H7))
-	 && isPiece(oppo, PAWN, REL_SQ(side, G6))) v.Blockages[side] -= e.P_BISHOP_TRAPPED_A7;
+	 && isPiece(oppo, PAWN, REL_SQ(side, G6))) 
+	    v.blockages[side] -= e.P_BISHOP_TRAPPED_A7;
 
 	 if (isPiece(side, BISHOP, REL_SQ(side, B8))
-	 && isPiece(oppo, PAWN, REL_SQ(side, C7))) v.Blockages[side] -= e.P_BISHOP_TRAPPED_A7;
+	 && isPiece(oppo, PAWN, REL_SQ(side, C7))) 
+	    v.blockages[side] -= e.P_BISHOP_TRAPPED_A7;
 
 	 if (isPiece(side, BISHOP, REL_SQ(side, G8))
-	 && isPiece(oppo, PAWN, REL_SQ(side, F7))) v.Blockages[side] -= e.P_BISHOP_TRAPPED_A7;
+	 && isPiece(oppo, PAWN, REL_SQ(side, F7))) 
+	    v.blockages[side] -= e.P_BISHOP_TRAPPED_A7;
 
 	 if (isPiece(side, BISHOP, REL_SQ(side, A6))
-	 && isPiece(oppo, PAWN, REL_SQ(side, B5))) v.Blockages[side] -= e.P_BISHOP_TRAPPED_A6;
+	 && isPiece(oppo, PAWN, REL_SQ(side, B5))) 
+	    v.blockages[side] -= e.P_BISHOP_TRAPPED_A6;
 
 	 if (isPiece(side, BISHOP, REL_SQ(side, H6))
-	 && isPiece(oppo, PAWN, REL_SQ(side, G5))) v.Blockages[side] -= e.P_BISHOP_TRAPPED_A6;
+	 && isPiece(oppo, PAWN, REL_SQ(side, G5))) 
+	    v.blockages[side] -= e.P_BISHOP_TRAPPED_A6;
 
 	 // bishop on initial sqare supporting castled king
 	 if (isPiece(side, BISHOP, REL_SQ(side, F1))
-	 && isPiece(side, KING, REL_SQ(side, G1))) v.PositionalThemes[side] += e.RETURNING_BISHOP;
+	 && isPiece(side, KING, REL_SQ(side, G1))) 
+	    v.positionalThemes[side] += e.RETURNING_BISHOP;
 
 	 if (isPiece(side, BISHOP, REL_SQ(side, C1))
-	 && isPiece(side, KING, REL_SQ(side, B1))) v.PositionalThemes[side] += e.RETURNING_BISHOP;
+	 && isPiece(side, KING, REL_SQ(side, B1))) 
+	    v.positionalThemes[side] += e.RETURNING_BISHOP;
 
     // uncastled king blocking own rook
     if ( ( isPiece(side, KING, REL_SQ(side,F1)) || isPiece(side, KING, REL_SQ(side,G1) ) )
-	&&   ( isPiece(side, ROOK, REL_SQ(side,H1)) || isPiece(side, ROOK, REL_SQ(side,G1) ) )
-       )
-        v.Blockages[side] -= e.P_KING_BLOCKS_ROOK;
+	&&   ( isPiece(side, ROOK, REL_SQ(side,H1)) || isPiece(side, ROOK, REL_SQ(side,G1) ) ) )
+        v.blockages[side] -= e.P_KING_BLOCKS_ROOK;
 
 	if ((isPiece(side, KING, REL_SQ(side,C1)) || isPiece(side, KING, REL_SQ(side,B1)))
-	&&  (isPiece(side, ROOK, REL_SQ(side,A1)) || isPiece(side, ROOK, REL_SQ(side,B1)))
-		)
-		v.Blockages[side] -= e.P_KING_BLOCKS_ROOK;
+	&&  (isPiece(side, ROOK, REL_SQ(side,A1)) || isPiece(side, ROOK, REL_SQ(side,B1))) )
+		v.blockages[side] -= e.P_KING_BLOCKS_ROOK;
 }
 
 int isPiece(U8 color, U8 piece, S8 sq) {
@@ -781,9 +787,9 @@ int isPiece(U8 color, U8 piece, S8 sq) {
 void printEval() {
     printf("------------------------------------------\n");
     printf("Total value (for side to move): %d \n", eval(-INF,INF, 0) );
-    printf("Material balance    : %d \n", b.PieceMaterial[WHITE] + b.PawnMaterial[WHITE] - b.PieceMaterial[BLACK] - b.PawnMaterial[BLACK] );
-    printf("Material adjustement: ");
-    printEvalFactor(v.MaterialAdjustement[WHITE], v.MaterialAdjustement[BLACK]);
+    printf("Material balance       : %d \n", b.PieceMaterial[WHITE] + b.PawnMaterial[WHITE] - b.PieceMaterial[BLACK] - b.PawnMaterial[BLACK] );
+    printf("Material adjustement   : ");
+	printEvalFactor(v.adjustMaterial[WHITE], v.adjustMaterial[BLACK]);
     printf("Mg Piece/square tables : ");
     printEvalFactor(b.PcsqMg[WHITE], b.PcsqMg[BLACK]);
     printf("Eg Piece/square tables : ");
@@ -796,14 +802,14 @@ void printEval() {
     printEvalFactor(v.mgTropism[WHITE], v.mgTropism[BLACK]);
     printf("Eg Tropism             : ");
     printEvalFactor(v.egTropism[WHITE], v.egTropism[BLACK]);
-    printf("Pawn structure      : %d \n", evalPawnStructure() );
-    printf("Blockages           : ");
-    printEvalFactor(v.Blockages[WHITE], v.Blockages[BLACK]);
-    printf("Positional themes   : ");
-    printEvalFactor(v.PositionalThemes[WHITE], v.PositionalThemes[BLACK]);
-    printf("King Shield         : ");
+    printf("Pawn structure         : %d \n", evalPawnStructure() );
+    printf("Blockages              : ");
+    printEvalFactor(v.blockages[WHITE], v.blockages[BLACK]);
+    printf("Positional themes      : ");
+    printEvalFactor(v.positionalThemes[WHITE], v.positionalThemes[BLACK]);
+    printf("King Shield            : ");
     printEvalFactor(v.kingShield[WHITE], v.kingShield[BLACK]);
-    printf("Tempo: ");
+    printf("Tempo                  : ");
     if ( b.stm == WHITE ) printf("%d", e.TEMPO);
     else printf("%d", -e.TEMPO);
     printf("\n");
