@@ -322,16 +322,13 @@ void EvalBishop(S8 sq, S8 side) {
 				if (!b.pawn_ctrl[!side][pos]) mob++;
 				// we exclude mobility to squares controlled by enemy pawns
                 if ( e.sqNearK[!side] [b.KingLoc[!side] ] [pos] ) ++att;
-            }
-            else if (b.color[pos] != side) {
-                mob++;
-                if ( e.sqNearK[!side] [b.KingLoc[!side] ] [pos] ) ++att;
-                break;
-            }
-            else {
-                break;
-            }
-
+			} else {                                // non-empty square
+				if (b.color[pos] != side) {         // opponent's piece
+					mob++;
+					if (e.sqNearK[!side][b.KingLoc[!side]][pos]) ++att;
+				}
+				break;
+			}
         }
     }
 
@@ -342,10 +339,6 @@ void EvalBishop(S8 sq, S8 side) {
         v.attCnt[side]++;
         v.attWeight[side] += 2*att;
     }
-
-	/**************************************************************************
-	* Evaluate king tropism                                                   *
-	**************************************************************************/
 
 	int tropism = getTropism(sq, b.KingLoc[!side]);
 	v.mgTropism[side] += 2 * tropism;
@@ -423,16 +416,13 @@ void EvalRook(S8 sq, S8 side) {
             if (b.pieces[pos] == PIECE_EMPTY) {
                 mob++;
                 if ( e.sqNearK[!side] [b.KingLoc[!side] ] [pos] ) ++att;
-            }
-            else if (b.color[pos] != side) {
-                mob++;
-                if ( e.sqNearK[!side] [b.KingLoc[!side] ] [pos] ) ++att;
-                break;
-            }
-            else {
-                break;
-            }
-
+			} else {                                // non-empty square
+				if (b.color[pos] != side) {         // opponent's piece
+					mob++;
+					if (e.sqNearK[!side][b.KingLoc[!side]][pos]) ++att;
+				}
+				break;
+			}
         }
     }
 
@@ -443,10 +433,6 @@ void EvalRook(S8 sq, S8 side) {
         v.attCnt[side]++;
         v.attWeight[side] += 3*att;
     }
-
-	/**************************************************************************
-	* Evaluate king tropism                                                   *
-	**************************************************************************/
 
 	int tropism = getTropism(sq, b.KingLoc[!side]);
 	v.mgTropism[side] += 2 * tropism;
@@ -483,16 +469,13 @@ void EvalQueen(S8 sq, S8 side) {
             if (b.pieces[pos] == PIECE_EMPTY) {
                 mob++;
                 if ( e.sqNearK[!side] [b.KingLoc[!side] ] [pos] ) ++att;
-            }
-            else if (b.color[pos] != side) {
-                mob++;
-                if ( e.sqNearK[!side] [b.KingLoc[!side] ] [pos] ) ++att;
-                break;
-            }
-            else {
-                break;
-            }
-
+			} else {                                 // non-empty square
+				if (b.color[pos] != side) {          // opponent's piece
+					mob++;
+					if (e.sqNearK[!side][b.KingLoc[!side]][pos]) ++att;
+				}
+				break;
+			}
         }
     }
 
@@ -504,14 +487,9 @@ void EvalQueen(S8 sq, S8 side) {
         v.attWeight[side] += 4*att;
     }
 
-	/**************************************************************************
-	* Evaluate king tropism                                                   *
-	**************************************************************************/
-
 	int tropism = getTropism(sq, b.KingLoc[!side]);
 	v.mgTropism[side] += 2 * tropism;
 	v.egTropism[side] += 4 * tropism;
-
 }
 
 int wKingShield() {
@@ -597,9 +575,7 @@ int getPawnScore() {
         return probeval;
 
     result = evalPawnStructure();
-
     ttpawn_save(result);
-
     return result;
 }
 
