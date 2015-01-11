@@ -68,31 +68,30 @@ int pawn_pcsq_eg[64] = {
 *    KNIGHT PCSQ                                                              *
 *                                                                             *
 *   - centralization bonus                                                    *
-*   - penalty for not being developed                                         *
+*   - rim and back rank penalty, including penalty for not being developed    *
 ******************************************************************************/
 
 int knight_pcsq_mg[64] = {
     -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,
     -8,   0,   0,   0,   0,   0,   0,  -8,
-    -8,   0,   4,   4,   4,   4,   0,  -8,
-    -8,   0,   4,   8,   8,   4,   0,  -8,
-    -8,   0,   4,   8,   8,   4,   0,  -8,
-    -8,   0,   4,   4,   4,   4,   0,  -8,
+    -8,   0,   4,   6,   6,   4,   0,  -8,
+    -8,   0,   6,   8,   8,   6,   0,  -8,
+    -8,   0,   6,   8,   8,   6,   0,  -8,
+    -8,   0,   4,   6,   6,   4,   0,  -8,
     -8,   0,   1,   2,   2,   1,   0,  -8,
-    -8, -12,  -8,  -8,  -8,  -8, -12,  -8
+   -16, -12,  -8,  -8,  -8,  -8, -12,  -16
 };
 
 int knight_pcsq_eg[64] = {
     -8,  -8,  -8,  -8,  -8,  -8,  -8,  -8,
     -8,   0,   0,   0,   0,   0,   0,  -8,
-    -8,   0,   4,   4,   4,   4,   0,  -8,
-    -8,   0,   4,   8,   8,   4,   0,  -8,
-    -8,   0,   4,   8,   8,   4,   0,  -8,
-    -8,   0,   4,   4,   4,   4,   0,  -8,
+    -8,   0,   4,   6,   6,   4,   0,  -8,
+    -8,   0,   6,   8,   8,   6,   0,  -8,
+    -8,   0,   6,   8,   8,   6,   0,  -8,
+    -8,   0,   4,   6,   6,   4,   0,  -8,
     -8,   0,   1,   2,   2,   1,   0,  -8,
-    -8, -12,  -8,  -8,  -8,  -8, -12,  -8
+   -16, -12,  -8,  -8,  -8,  -8, -12,  -16
 };
-
 
 /******************************************************************************
 *                BISHOP PCSQ                                                  *
@@ -221,8 +220,8 @@ int weak_pawn_pcsq[64] = {
    -10, -12, -14, -16, -16, -14, -12, -10,
    -10, -12, -14, -16, -16, -14, -12, -10,
    -10, -12, -14, -16, -16, -14, -12, -10,
-    -8, -12, -14, -16, -16, -14, -12, -10,
-    -8, -12, -14, -16, -16, -14, -12, -10,
+   -10, -12, -14, -16, -16, -14, -12, -10,
+   -10, -12, -14, -16, -16, -14, -12, -10,
      0,   0,   0,   0,   0,   0,   0,   0
 };
 
@@ -236,7 +235,6 @@ int passed_pawn_pcsq[64] = {
     20,  20,  20,  20,  20,  20,  20,  20,
      0,   0,   0,   0,   0,   0,   0,   0
 };
-
 
 void setDefaultEval() {
 
@@ -276,7 +274,6 @@ void setBasicValues() {
     e.SORT_VALUE[KING] = SORT_KING;
 
     /* trapped and blocked pieces */
-
     e.P_KING_BLOCKS_ROOK   = 24;
     e.P_BLOCK_CENTRAL_PAWN = 24;
     e.P_BISHOP_TRAPPED_A7  = 150;
@@ -285,7 +282,6 @@ void setBasicValues() {
     e.P_KNIGHT_TRAPPED_A7  = 100;
 
     /* minor penalties */
-
     e.P_C3_KNIGHT = 5;
     e.P_NO_FIANCHETTO = 4;
 
@@ -295,7 +291,6 @@ void setBasicValues() {
     e.P_NO_SHIELD = 10;
 
     /* minor bonuses */
-
     e.ROOK_OPEN = 10;
     e.ROOK_HALF = 5;
     e.RETURNING_BISHOP = 20;
@@ -350,8 +345,7 @@ void setPcsq() {
         e.passed_pawn[WHITE][index_white[i]] = passed_pawn_pcsq[i];
         e.passed_pawn[BLACK][index_black[i]] = passed_pawn_pcsq[i];
 
-        /* protected passers are considered slightly stronger
-        than ordinary passed pawns */
+        /* protected passers are slightly stronger than ordinary passers */
 
         e.protected_passer[WHITE][index_white[i]] = (passed_pawn_pcsq[i] * 10) / 8;
         e.protected_passer[BLACK][index_black[i]] = (passed_pawn_pcsq[i] * 10) / 8;
@@ -436,7 +430,7 @@ void processIniString(char line[250]) {
     else if (!strncmp(line, "PENALTY_ROOK_PAIR", 17))
 		converted = sscanf(line, "PENALTY_ROOK_PAIR %d", &e.P_KNIGHT_PAIR);
 
-    /* pawn shield*/
+    /* pawn shield */
     else if (!strncmp(line, "SHIELD_1", 8))
 		converted = sscanf(line, "SHIELD_1 %d", &e.SHIELD_1);
     else if (!strncmp(line, "SHIELD_2", 8))
@@ -445,7 +439,6 @@ void processIniString(char line[250]) {
 		converted = sscanf(line, "PENALTY_NO_SHIELD %d", &e.P_NO_SHIELD);
 
     /* major penalties */
-
     else if (!strncmp(line, "PENALTY_BISHOP_TRAPPED_A7", 25))
 		converted = sscanf(line, "PENALTY_BISHOP_TRAPPED_A7 %d", &e.P_BISHOP_TRAPPED_A7);
     else if (!strncmp(line, "PENALTY_BISHOP_TRAPPED_A6", 25))
@@ -466,7 +459,6 @@ void processIniString(char line[250]) {
 		converted = sscanf(line, "PENALTY_NO_FIANCHETTO %d", &e.P_NO_FIANCHETTO);
 
     /* minor positional bonuses */
-
     else if (!strncmp(line, "ROOK_OPEN", 9))
 		converted = sscanf(line, "ROOK_OPEN %d", &e.ROOK_OPEN);
     else if (!strncmp(line, "ROOK_HALF_OPEN", 14))
@@ -479,7 +471,6 @@ void processIniString(char line[250]) {
 		converted = sscanf(line, "TEMPO %d", &e.TEMPO);
 
     /* variables deciding about inner workings of evaluation function */
-
     else if (!strncmp(line, "ENDGAME_MATERIAL", 16))
 		converted = sscanf(line, "ENDGAME_MATERIAL %d", &e.ENDGAME_MAT);
 }
