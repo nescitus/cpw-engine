@@ -2,7 +2,15 @@
 #include "stdafx.h"
 #include "0x88_math.h"
 
-int See(smove move) {
+/******************************************************************************
+*  This is not yet proper static exchange evaluation, but an approximation    *
+*  proposed by Harm Geert Mueller under the acronym BLIND (better, or lower   *
+*  if not defended. As the name indicates, it detects only obviously good     *
+*  captures. We use it for limited task of deciding where to mix killer moves *
+*  between captures.                                                          *
+******************************************************************************/
+
+int Blind (smove move) {
 	int sq_to = move.to;
 	int sq_fr = move.from;
 	int pc_fr = b.pieces[sq_fr];
@@ -10,25 +18,21 @@ int See(smove move) {
 	int val = e.SORT_VALUE[pc_to];
 
 	/* captures by pawn do not lose material */
-	if (pc_fr == PAWN) return 0;
+	if (pc_fr == PAWN) return 1;
 
 	/* Captures "lower takes higher" (as well as BxN) are good by definition. */
 	if (e.SORT_VALUE[pc_to] >= e.SORT_VALUE[pc_fr] - 50)
-		return 0;
+		return 1;
 
+	/* Make the first capture, so that X-ray defender show up*/
 	clearSq(sq_fr);
-	
-	if (!isAttacked(!b.stm, sq_to)) {    // no defender
-		fillSq(b.stm, pc_fr, sq_fr);
-		return val;
-	}
-	else {
-		if (!isAttacked(b.stm, sq_to)) { // no second attacker
-		   fillSq(b.stm, pc_fr, sq_fr);
-		   return val - e.SORT_VALUE[pc_fr];
-		}
-	}
 
+	/* Captures of undefended pieces are good by definition */
+	if (!isAttacked(!b.stm, sq_to)) {
+		fillSq(b.stm, pc_fr, sq_fr);
+		return 1;
+	}
+	
 	fillSq(b.stm, pc_fr, sq_fr);
-	return 0; // We know nothing, Jon Snow!
+	return 0; // of other captures we know nothing, Jon Snow!
 }

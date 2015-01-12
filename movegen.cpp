@@ -213,7 +213,8 @@ void movegen_push(char from, char to, U8 piece_from, U8 piece_cap, char flags) {
     **************************************************************************/
 
 	if (piece_cap != PIECE_EMPTY) {
-		m[movecount].score = SORT_CAPT + e.SORT_VALUE[piece_cap] + piece_from;
+		if (Blind(m[movecount]) == 0) m[movecount].score = SORT_KILL - 100 + e.SORT_VALUE[piece_cap] + piece_from;
+		else                        m[movecount].score = SORT_CAPT + e.SORT_VALUE[piece_cap] + piece_from;
 	}
 
     if ((piece_from == PAWN) && (to == b.ep)) {

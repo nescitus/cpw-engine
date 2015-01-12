@@ -287,7 +287,7 @@ void printEvalFactor(int wh, int bl);
 
 int Quiesce( int alpha, int beta );
 int badCapture(smove move);
-int See(smove move);
+int Blind(smove move);
 
 int isAttacked(char byColor, S8 sq);
 int leaperAttack( char byColor, S8 sq, char byPiece );
