@@ -2,12 +2,6 @@
 
 #include "stdafx.h"
 
-enum etask {
-    TASK_NOTHING,
-    TASK_SEARCH,
-    TASK_PONDER
-} extern task;
-
 stime chronos;
 
 extern sSearchDriver sd;

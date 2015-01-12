@@ -4,14 +4,6 @@
 
 #include <windows.h>
 
-
-enum etask {
-    TASK_NOTHING,
-    TASK_SEARCH,
-    TASK_PONDER
-} task = TASK_NOTHING;
-
-
 enum eproto {
     PROTO_NOTHING,
     PROTO_XBOARD,
@@ -227,10 +219,11 @@ int com_uci(char * command) {
     if (!strcmp(command, "uci")) {
         mode = PROTO_UCI;
 
-        com_send("id name CPW-Engine 1.1.6");
+        com_send("id name CPW-Engine 1.1.7");
         com_send("id author Computer Chess Wiki");
 
         printf("option name Hash type spin default 64 min 1 max 1024\n");
+		printf("option name Ponder type check default true\n");
         // send options
 
         com_send("uciok");
@@ -242,6 +235,8 @@ int com_uci(char * command) {
     if (!strncmp(command, "setoption", 9)) {
         char name[256];
         char value[256];
+
+	    if (strstr(command, "setoption name Ponder value"))			options.ponder = (strstr(command, "value true") != 0);
 
 		converted = sscanf(command, "setoption name %s value %s", name, value);
 

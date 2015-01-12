@@ -212,8 +212,9 @@ void movegen_push(char from, char to, U8 piece_from, U8 piece_cap, char flags) {
 	* the same score as pawn takes pawn.                                      *
     **************************************************************************/
 
-    if (piece_cap != PIECE_EMPTY)
-        m[movecount].score = SORT_CAPT + e.SORT_VALUE[piece_cap] + piece_from;
+	if (piece_cap != PIECE_EMPTY) {
+		m[movecount].score = SORT_CAPT + e.SORT_VALUE[piece_cap] + piece_from;
+	}
 
     if ((piece_from == PAWN) && (to == b.ep)) {
         m[movecount].score = SORT_CAPT + e.SORT_VALUE[PAWN] + 5;

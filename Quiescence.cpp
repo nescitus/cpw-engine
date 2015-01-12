@@ -6,9 +6,7 @@ extern bool time_over;
 
 int Quiesce( int alpha, int beta )  {
 
-    if ( !time_over && !(sd.nodes & 0x3FF)  )
-        time_over = time_stop();
-
+	CheckInput();
     if (time_over) return 0;
 
     sd.nodes++;
@@ -101,8 +99,8 @@ int badCapture(smove move) {
     *   defender and (b) there is more than one attacker.                     *
     **************************************************************************/
 
-	if (b.pawn_ctrl[b.color[move.from]^1] [move.to]
-	&&   e.PIECE_VALUE[move.piece_cap] + 200 < e.PIECE_VALUE[move.piece_from] )
+	if (b.pawn_ctrl[b.color[move.from] ^ 1][move.to]
+		&& e.PIECE_VALUE[move.piece_cap] + 200 < e.PIECE_VALUE[move.piece_from])
         return 1;
 
     /* if a capture is not processed, it cannot be considered bad */

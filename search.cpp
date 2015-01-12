@@ -134,7 +134,7 @@ int search_root( U8 depth, int alpha, int beta ) {
             continue;
         }
 
-        //	if ( mode == PROTO_UCI )
+        //	if ( mode == PROTO_UCI && depth > 6)
         //		info_currmove( movelist[i], currmove_legal );
 
         currmove_legal ++;
@@ -205,8 +205,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
     * the number of nodes, it will be slightly inexact.                       *
     **************************************************************************/
 
-    if ( !time_over && !(sd.nodes & 4095) )
-        time_over = time_stop();
+	CheckInput(); // check for new commands or timeout
     if ( time_over ) return 0;
 
     /**************************************************************************
@@ -279,9 +278,9 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
     **************************************************************************/
 
     if (depth < 3
-    && (!is_pv)
-    && (!flagInCheck)
-    && (abs(beta - 1) > -INF+100))
+    && !is_pv
+    && !flagInCheck
+    &&  abs(beta - 1) > -INF+100)
     {
         int static_eval = eval(alpha, beta, 1);
 
@@ -299,12 +298,12 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
     *  in  the endgame because of the risk of zugzwang.                       *
     **************************************************************************/
 
-    if ( ( depth > 2)
-    &&   ( can_null )
-    &&   (!is_pv)
-    &&   ( eval(alpha, beta, 1) > beta )
-    &&   ( b.PieceMaterial[b.stm] > e.ENDGAME_MAT )
-    &&   ( !flagInCheck )  )
+    if ( depth > 2
+    &&   can_null
+    &&  !is_pv
+    &&   eval(alpha, beta, 1) > beta
+    &&   b.PieceMaterial[b.stm] > e.ENDGAME_MAT
+    &&  !flagInCheck )
     {
         char ep_old = b.ep;
         move_makeNull();
@@ -317,7 +316,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         char R = 2;
         if ( depth > 6 ) R = 3;
 
-		val = -Search(depth - R - 1, ply + 1, -beta, -beta + 1, NO_NULL, NO_PV);
+		val = -Search(depth-R-1, ply+1, -beta, -beta + 1, NO_NULL, NO_PV);
 
         move_unmakeNull(ep_old);
 
@@ -686,4 +685,10 @@ int contempt() {
 
     if ( b.stm == sd.myside ) return value;
     else                      return -value;
+}
+
+void CheckInput() {
+
+    if ( !time_over && !(sd.nodes & 4095) )
+        time_over = time_stop();
 }

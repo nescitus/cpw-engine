@@ -324,7 +324,7 @@ void EvalBishop(S8 sq, S8 side) {
 					mob++;
 					if (e.sqNearK[!side][b.KingLoc[!side]][pos]) ++att;
 				}
-				break;
+				break;                              // own piece
 			}
         }
     }
@@ -411,7 +411,7 @@ void EvalRook(S8 sq, S8 side) {
 					mob++;
 					if (e.sqNearK[!side][b.KingLoc[!side]][pos]) ++att;
 				}
-				break;
+				break;                              // own piece
 			}
         }
     }
@@ -464,7 +464,7 @@ void EvalQueen(S8 sq, S8 side) {
 					mob++;
 					if (e.sqNearK[!side][b.KingLoc[!side]][pos]) ++att;
 				}
-				break;
+				break;                               // own piece
 			}
         }
     }

@@ -3,17 +3,11 @@
 #include "0x88_math.h"
 #include "transposition.h"
 
-
-enum etask {
-    TASK_NOTHING,
-    TASK_SEARCH,
-    TASK_PONDER
-} extern task;
-
 extern bool time_over;
 
 unsigned int gettime();
 
+/* retrieving pv from hash table */
 int util_pv(char * pv) {
 
     sboard rootb = b;
@@ -213,7 +207,6 @@ int algebraic_moves(char * a) {
         a += 4;
         if (a[0] == 0) break;
         if (a[0] != ' ') a++;
-
     }
 
     return found_match;

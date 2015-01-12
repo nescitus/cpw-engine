@@ -8,13 +8,8 @@ void setDefaultEval();
 int tt_init();
 int tt_setsize(int size);
 
-
-
-enum etask {
-    TASK_NOTHING,
-    TASK_SEARCH
-} extern task;
-
+s_options options;
+etask task;
 
 void time_uci_go(char * command);
 

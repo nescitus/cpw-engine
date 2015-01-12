@@ -142,6 +142,12 @@ enum etimef {
     FINFINITE=128
 };
 
+enum etask {
+	TASK_NOTHING,
+	TASK_SEARCH,
+	TASK_PONDER
+} extern task;
+
 struct stime {
     int time[2];
     int inc[2];
@@ -153,7 +159,11 @@ struct stime {
     U8 flags;
 } extern chronos;
 
+struct s_options {
+	int ponder;
 
+};
+extern s_options options;
 
 struct s_eval_data {
 
@@ -220,7 +230,7 @@ int com_nothing(char * command);
 int com();
 int com_init();
 int com_ismove(char * command);
-
+void CheckInput();
 
 
 U8 movegen(smove * moves, U8 tt_move);
@@ -277,6 +287,7 @@ void printEvalFactor(int wh, int bl);
 
 int Quiesce( int alpha, int beta );
 int badCapture(smove move);
+int See(smove move);
 
 int isAttacked(char byColor, S8 sq);
 int leaperAttack( char byColor, S8 sq, char byPiece );
