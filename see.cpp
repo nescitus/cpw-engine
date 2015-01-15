@@ -6,8 +6,7 @@
 *  This is not yet proper static exchange evaluation, but an approximation    *
 *  proposed by Harm Geert Mueller under the acronym BLIND (better, or lower   *
 *  if not defended. As the name indicates, it detects only obviously good     *
-*  captures. We use it for limited task of deciding where to mix killer moves *
-*  between captures.                                                          *
+*  captures, but it seems enough to improve move ordering.                    *
 ******************************************************************************/
 
 int Blind (smove move) {

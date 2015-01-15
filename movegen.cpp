@@ -209,12 +209,13 @@ void movegen_push(char from, char to, U8 piece_from, U8 piece_cap, char flags) {
 	* Score for captures: add the value of the captured piece and the id      *
 	* of the attacking piece. If two pieces attack the same target, the one   *
 	* with the higher id (eg. Pawn=5) gets searched first. En passant gets    *
-	* the same score as pawn takes pawn.                                      *
+	* the same score as pawn takes pawn. Good captures are put at the front   *
+	* of the list, bad captures - after ordinary moves.                       *
     **************************************************************************/
 
 	if (piece_cap != PIECE_EMPTY) {
-		if (Blind(m[movecount]) == 0) m[movecount].score = SORT_KILL - 100 + e.SORT_VALUE[piece_cap] + piece_from;
-		else                        m[movecount].score = SORT_CAPT + e.SORT_VALUE[piece_cap] + piece_from;
+		if (Blind(m[movecount]) == 0) m[movecount].score = e.SORT_VALUE[piece_cap] + piece_from;
+		else                          m[movecount].score = SORT_CAPT + e.SORT_VALUE[piece_cap] + piece_from;
 	}
 
     if ((piece_from == PAWN) && (to == b.ep)) {
