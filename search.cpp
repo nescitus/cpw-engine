@@ -490,17 +490,18 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
                 if (!move_iscapt(move)
                 && !move_isprom(move)) {
                     setKillers(movelist[i], ply);
-                    sd.history[move.from][move.to] += depth*depth;
+                    sd.history[b.stm][move.from][move.to] += depth*depth;
 
                     /**********************************************************
                     *  With super deep search history table would overflow    *
                     *  - let's prevent it.                                    *
                     **********************************************************/
 
-                    if (sd.history[move.from][move.to] > SORT_KILL) {
+                    if (sd.history[b.stm][move.from][move.to] > SORT_KILL) {
+						for (int cl = 0; cl < 2; cl++)
                         for (int a = 0; a < 128; a++)
                             for (int b = 0; b < 128; b++) {
-                                sd.history[a][b] = sd.history[a][b] / 2;
+                                sd.history[cl][a][b] = sd.history[cl][a][b] / 2;
                             }
                     }
                 }
@@ -652,9 +653,10 @@ int isRepetition() {
 ******************************************************************************/
 
 void clearHistoryTable() {
+	for (int cl = 0; cl < 2; cl++)
     for (int i = 0; i < 128; i++)
         for (int j = 0; j < 128; j++) {
-            sd.history[i][j] = 0;
+            sd.history[cl][i][j] = 0;
         }
 }
 
@@ -665,9 +667,10 @@ void clearHistoryTable() {
 ******************************************************************************/
 
 void ageHistoryTable() {
+	for (int cl = 0; cl < 2; cl++)
     for (int i = 0; i < 128; i++)
         for (int j = 0; j < 128; j++) {
-            sd.history[i][j] = sd.history[i][j] / 8;
+            sd.history[cl][i][j] = sd.history[cl][i][j] / 8;
         }
 }
 

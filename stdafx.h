@@ -123,7 +123,7 @@ struct smove {
 struct sSearchDriver {
     int myside;
     U8 depth;
-    int history[128][128];
+    int history[2][128][128];
     smove killers[1024] [2];
     U64 nodes;
     S32 movetime;
@@ -198,8 +198,8 @@ struct s_eval_data {
     int P_BLOCK_CENTRAL_PAWN;
     int P_KING_BLOCKS_ROOK;
 
-    int SHIELD_1;
     int SHIELD_2;
+    int SHIELD_3;
     int P_NO_SHIELD;
 
     int RETURNING_BISHOP;

@@ -489,27 +489,27 @@ int wKingShield() {
     /* king on the kingside */
     if ( COL(b.KingLoc[WHITE]) > COL_E ) {
 
-        if ( isPiece(WHITE, PAWN, F2) )  result += e.SHIELD_1;
-        else if ( isPiece(WHITE, PAWN, F3) )  result += e.SHIELD_2;
+        if ( isPiece(WHITE, PAWN, F2) )  result += e.SHIELD_2;
+        else if ( isPiece(WHITE, PAWN, F3) )  result += e.SHIELD_3;
 
-        if ( isPiece(WHITE, PAWN, G2) )  result += e.SHIELD_1;
-        else if ( isPiece(WHITE, PAWN, G3) )  result += e.SHIELD_2;
+        if ( isPiece(WHITE, PAWN, G2) )  result += e.SHIELD_2;
+        else if ( isPiece(WHITE, PAWN, G3) )  result += e.SHIELD_3;
 
-        if ( isPiece(WHITE, PAWN, H2) )  result += e.SHIELD_1;
-        else if ( isPiece(WHITE, PAWN, H3) )  result += e.SHIELD_2;
+        if ( isPiece(WHITE, PAWN, H2) )  result += e.SHIELD_2;
+        else if ( isPiece(WHITE, PAWN, H3) )  result += e.SHIELD_3;
     }
 
     /* king on the queenside */
     else if ( COL(b.KingLoc[WHITE]) < COL_D ) {
 
-        if ( isPiece(WHITE, PAWN, A2) )  result += e.SHIELD_1;
-        else if ( isPiece(WHITE, PAWN, A3) )  result += e.SHIELD_2;
+        if ( isPiece(WHITE, PAWN, A2) )  result += e.SHIELD_2;
+        else if ( isPiece(WHITE, PAWN, A3) )  result += e.SHIELD_3;
 
-        if ( isPiece(WHITE, PAWN, B2) )  result += e.SHIELD_1;
-        else if ( isPiece(WHITE, PAWN, B3) )  result += e.SHIELD_2;
+        if ( isPiece(WHITE, PAWN, B2) )  result += e.SHIELD_2;
+        else if ( isPiece(WHITE, PAWN, B3) )  result += e.SHIELD_3;
 
-        if ( isPiece(WHITE, PAWN, C2) )  result += e.SHIELD_1;
-        else if ( isPiece(WHITE, PAWN, C3) )  result += e.SHIELD_2;
+        if ( isPiece(WHITE, PAWN, C2) )  result += e.SHIELD_2;
+        else if ( isPiece(WHITE, PAWN, C3) )  result += e.SHIELD_3;
     }
 
     return result;
@@ -520,26 +520,26 @@ int bKingShield() {
 
     /* king on the kingside */
     if ( COL(b.KingLoc[BLACK]) > COL_E ) {
-        if ( isPiece(BLACK, PAWN, F7) )  result += e.SHIELD_1;
-        else if ( isPiece(BLACK, PAWN, F6) )  result += e.SHIELD_2;
+        if ( isPiece(BLACK, PAWN, F7) )  result += e.SHIELD_2;
+        else if ( isPiece(BLACK, PAWN, F6) )  result += e.SHIELD_3;
 
-        if ( isPiece(BLACK, PAWN, G7) )  result += e.SHIELD_1;
-        else if ( isPiece(BLACK, PAWN, G6) )  result += e.SHIELD_2;
+        if ( isPiece(BLACK, PAWN, G7) )  result += e.SHIELD_2;
+        else if ( isPiece(BLACK, PAWN, G6) )  result += e.SHIELD_3;
 
-        if ( isPiece(BLACK, PAWN, H7) )  result += e.SHIELD_1;
-        else if ( isPiece(BLACK, PAWN, H6) )  result += e.SHIELD_2;
+        if ( isPiece(BLACK, PAWN, H7) )  result += e.SHIELD_2;
+        else if ( isPiece(BLACK, PAWN, H6) )  result += e.SHIELD_3;
     }
 
     /* king on the queenside */
     else if ( COL(b.KingLoc[BLACK]) < COL_D ) {
-        if ( isPiece(BLACK, PAWN, A7) )  result += e.SHIELD_1;
-        else if ( isPiece(BLACK, PAWN, A6) )  result += e.SHIELD_2;
+        if ( isPiece(BLACK, PAWN, A7) )  result += e.SHIELD_2;
+        else if ( isPiece(BLACK, PAWN, A6) )  result += e.SHIELD_3;
 
-        if ( isPiece(BLACK, PAWN, B7) )  result += e.SHIELD_1;
-        else if ( isPiece(BLACK, PAWN, B6) )  result += e.SHIELD_2;
+        if ( isPiece(BLACK, PAWN, B7) )  result += e.SHIELD_2;
+        else if ( isPiece(BLACK, PAWN, B6) )  result += e.SHIELD_3;
 
-        if ( isPiece(BLACK, PAWN, C7) )  result += e.SHIELD_1;
-        else if ( isPiece(BLACK, PAWN, C6) )  result += e.SHIELD_2;
+        if ( isPiece(BLACK, PAWN, C7) )  result += e.SHIELD_2;
+        else if ( isPiece(BLACK, PAWN, C6) )  result += e.SHIELD_3;
     }
     return result;
 }

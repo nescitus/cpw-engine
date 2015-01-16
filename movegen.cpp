@@ -203,7 +203,7 @@ void movegen_push(char from, char to, U8 piece_from, U8 piece_cap, char flags) {
 	* Quiet moves are sorted by history score.                                *
 	**************************************************************************/
 
-    m[movecount].score = sd.history[from][to];
+    m[movecount].score = sd.history[b.stm][from][to];
 
     /**************************************************************************
 	* Score for captures: add the value of the captured piece and the id      *

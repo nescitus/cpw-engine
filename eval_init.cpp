@@ -286,8 +286,8 @@ void setBasicValues() {
     e.P_NO_FIANCHETTO = 4;
 
     /* king's defence */
-    e.SHIELD_1 = 10;
-    e.SHIELD_2 = 5;
+    e.SHIELD_2 = 10;
+    e.SHIELD_3 = 5;
     e.P_NO_SHIELD = 10;
 
     /* minor bonuses */
@@ -431,10 +431,10 @@ void processIniString(char line[250]) {
 		converted = sscanf(line, "PENALTY_ROOK_PAIR %d", &e.P_KNIGHT_PAIR);
 
     /* pawn shield */
-    else if (!strncmp(line, "SHIELD_1", 8))
-		converted = sscanf(line, "SHIELD_1 %d", &e.SHIELD_1);
     else if (!strncmp(line, "SHIELD_2", 8))
 		converted = sscanf(line, "SHIELD_2 %d", &e.SHIELD_2);
+    else if (!strncmp(line, "SHIELD_3", 8))
+		converted = sscanf(line, "SHIELD_3 %d", &e.SHIELD_3);
     else if (!strncmp(line, "PENALTY_NO_SHIELD", 17))
 		converted = sscanf(line, "PENALTY_NO_SHIELD %d", &e.P_NO_SHIELD);
 

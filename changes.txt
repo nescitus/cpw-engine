@@ -1,3 +1,5 @@
+v. 1.1.10(2015.01.15) : bad captures sorted behind ordinary moves
+v. 1.1.9 (2015.01.13) : Blind() fuction to sort captures
 v. 1.1.8 (2015.01.12) : much better passed pawn eval #TUNE
 v. 1.1.7 (2015.01.11) : better knight piece/square tables #TUNE
 v. 1.1.6 (2015.01.10) : fix to ply indexing in null move search #FIX #SEARCH
