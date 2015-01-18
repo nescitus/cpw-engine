@@ -100,6 +100,7 @@ struct sboard {
     int PieceMaterial[2];
     int PawnMaterial[2];
     U8 PieceCount[2][6];
+	U8 PawnsOnFile[2][8];
 	U8 pawn_ctrl[2][128];
 };
 extern sboard b;

@@ -1,3 +1,5 @@
+v. 1.1.12(2005.01.18) : two-ply late move reduction is triggered earlier
+v. 1.1.11(2005.01.17) : history table takes color into account
 v. 1.1.10(2015.01.15) : bad captures sorted behind ordinary moves
 v. 1.1.9 (2015.01.13) : Blind() fuction to sort captures
 v. 1.1.8 (2015.01.12) : much better passed pawn eval #TUNE

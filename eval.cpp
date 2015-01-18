@@ -345,46 +345,22 @@ void EvalBishop(S8 sq, S8 side) {
 void EvalRook(S8 sq, S8 side) {
     int att = 0;
     int mob = 0;
-    int ownBlockingPawns = 0;
-    int oppBlockingPawns = 0;
-    int stepFwd;
-    int nextSq;
 
     v.gamePhase += 2;
 
-    /**************************************************************************
-    *  An ugly hack to detect open files. Merging it with mobility eval would *
-    *  have been better, but less readable                                    *
-    /*************************************************************************/
-
-    if (side == WHITE) stepFwd = NORTH;
-    else stepFwd = SOUTH;
-    nextSq = sq + stepFwd;
-
-    while (IS_SQ(nextSq)) {
-        if (b.pieces[nextSq] == PAWN) {
-            if (b.color[nextSq] == side) {
-                ownBlockingPawns++;
-                break;
-            }
-            else
-                oppBlockingPawns++;
-        }
-        nextSq += stepFwd;
-    }
-
+   
     /**************************************************************************
     *  Bonus for open and half-open files is merged with mobility score.      *
 	*  Bonus for open files targetting enemy king is added to attWeight[]     *
     /*************************************************************************/
 
-    if ( !ownBlockingPawns ) {
-        if ( !oppBlockingPawns ) {
+	if (b.PawnsOnFile[side][COL(sq)] == 0) {
+		if (b.PawnsOnFile[!side][COL(sq)] == 0) { // fully open file
             v.mgMob[side] += e.ROOK_OPEN;
             v.egMob[side] += e.ROOK_OPEN;
 			if (abs(COL(sq) - COL(b.KingLoc[!side])) < 2) 
 			   v.attWeight[side] += 1;
-        } else {
+        } else {                                  // half open file
             v.mgMob[side] += e.ROOK_HALF;
             v.egMob[side] += e.ROOK_HALF;
 			if (abs(COL(sq) - COL(b.KingLoc[!side])) < 2) 

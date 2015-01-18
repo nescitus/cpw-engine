@@ -44,6 +44,11 @@ void clearBoard() {
         b.PieceCount[ WHITE ] [ i ] = 0;
         b.PieceCount[ BLACK ] [ i ] = 0;
     }
+
+	for (int i = 0; i<8; i++) {
+		b.PawnsOnFile[WHITE][i] = 0;
+		b.PawnsOnFile[BLACK][i] = 0;
+	}
 }
 
 /******************************************************************************
@@ -72,8 +77,11 @@ void fillSq(U8 color, U8 piece, S8 sq) {
         // update pawn material
         b.PawnMaterial[color] += e.PIECE_VALUE[piece];
 
-        // update pawn hashkey - please note conversion to a 32-bit integer
+        // update pawn hashkey
         b.phash ^= zobrist.piecesquare[piece][color][sq];
+
+		// update counter of pawns on a given file
+		++b.PawnsOnFile[color][COL(sq)];
 
 		// update squares controlled by pawns
 		if (color == WHITE) {
@@ -121,6 +129,7 @@ void clearSq(S8 sq) {
 			if (IS_SQ(sq + SW)) b.pawn_ctrl[BLACK][sq + SW]--;
 		}
 
+		--b.PawnsOnFile[color][COL(sq)];
         b.PawnMaterial[color] -= e.PIECE_VALUE[piece];
         b.phash ^= zobrist.piecesquare[piece][color][sq];
     }

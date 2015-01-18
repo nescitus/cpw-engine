@@ -413,7 +413,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
             ******************************************************************/
 
             reduction_depth = 1;
-            if (moves_tried > 8) reduction_depth += 1;
+            if (moves_tried > 6) reduction_depth += 1;
             new_depth -= reduction_depth;
         }
 
@@ -654,10 +654,10 @@ int isRepetition() {
 
 void clearHistoryTable() {
 	for (int cl = 0; cl < 2; cl++)
-    for (int i = 0; i < 128; i++)
-        for (int j = 0; j < 128; j++) {
-            sd.history[cl][i][j] = 0;
-        }
+       for (int i = 0; i < 128; i++)
+          for (int j = 0; j < 128; j++) {
+             sd.history[cl][i][j] = 0;
+          }
 }
 
 /******************************************************************************
@@ -668,10 +668,10 @@ void clearHistoryTable() {
 
 void ageHistoryTable() {
 	for (int cl = 0; cl < 2; cl++)
-    for (int i = 0; i < 128; i++)
-        for (int j = 0; j < 128; j++) {
-            sd.history[cl][i][j] = sd.history[cl][i][j] / 8;
-        }
+       for (int i = 0; i < 128; i++)
+          for (int j = 0; j < 128; j++) {
+             sd.history[cl][i][j] = sd.history[cl][i][j] / 8;
+          }
 }
 
 /******************************************************************************

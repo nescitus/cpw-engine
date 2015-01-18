@@ -34,14 +34,13 @@ int move_make(smove move) {
     if ( (move.piece_from == PAWN) || move_iscapt(move) )
         b.ply = 0;
 
-    /* a piece vacates its initial square */
-    clearSq(move.from);
-
     /* in case of a capture, the "to" square must be cleared,
-       else incrementally updated stuff gets blown up
-    */
+       else incrementally updated stuff gets blown up */
     if ( b.pieces[move.to] != PIECE_EMPTY )
         clearSq(move.to);
+
+	/* a piece vacates its initial square */
+	clearSq(move.from);
 
     /* a piece arrives to its destination square */
     fillSq( !b.stm, move.piece_to, move.to );
