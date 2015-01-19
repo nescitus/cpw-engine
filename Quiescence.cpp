@@ -45,7 +45,7 @@ int Quiesce( int alpha, int beta )  {
         **********************************************************************/
 
         if ( ( stand_pat + e.PIECE_VALUE[ movelist[i].piece_cap ] + 200 < alpha ) 
-		&&   ( b.PieceMaterial[!b.stm] - e.PIECE_VALUE[movelist[i].piece_cap] > e.ENDGAME_MAT ) 
+		&&   ( b.piece_material[!b.stm] - e.PIECE_VALUE[movelist[i].piece_cap] > e.ENDGAME_MAT ) 
 		&&   ( !move_isprom(movelist[i]) ) )
             continue;
 

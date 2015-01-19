@@ -76,7 +76,9 @@ int eval( int alpha, int beta, int use_hash ) {
     *  Clear all eval data                                                    *
     **************************************************************************/
 
-    v.gamePhase = 0;
+	v.gamePhase = b.piece_cnt[WHITE][KNIGHT] + b.piece_cnt[WHITE][BISHOP] + 2 * b.piece_cnt[WHITE][ROOK] + 4 * b.piece_cnt[WHITE][QUEEN]
+		        + b.piece_cnt[BLACK][KNIGHT] + b.piece_cnt[BLACK][BISHOP] + 2 * b.piece_cnt[BLACK][ROOK] + 4 * b.piece_cnt[BLACK][QUEEN];
+
 	for (int side = 0; side <= 1; side++) {
 		v.mgMob[side] = 0;
 		v.egMob[side] = 0;
@@ -94,10 +96,10 @@ int eval( int alpha, int beta, int use_hash ) {
 	*  Sum the incrementally counted material and piece/square table values   *
 	**************************************************************************/
 
-    mgScore = b.PieceMaterial[WHITE] + b.PawnMaterial[WHITE] + b.PcsqMg[WHITE]
-            - b.PieceMaterial[BLACK] - b.PawnMaterial[BLACK] - b.PcsqMg[BLACK];
-    egScore = b.PieceMaterial[WHITE] + b.PawnMaterial[WHITE] + b.PcsqEg[WHITE]
-            - b.PieceMaterial[BLACK] - b.PawnMaterial[BLACK] - b.PcsqEg[BLACK];
+    mgScore = b.piece_material[WHITE] + b.pawn_material[WHITE] + b.pcsq_mg[WHITE]
+            - b.piece_material[BLACK] - b.pawn_material[BLACK] - b.pcsq_mg[BLACK];
+    egScore = b.piece_material[WHITE] + b.pawn_material[WHITE] + b.pcsq_eg[WHITE]
+            - b.piece_material[BLACK] - b.pawn_material[BLACK] - b.pcsq_eg[BLACK];
 
     /************************************************************************** 
 	* add king's pawn shield score and evaluate part of piece blockage score  *
@@ -121,17 +123,17 @@ int eval( int alpha, int beta, int use_hash ) {
 	*  value as pawns disappear, whereas rooks gain.                          *
     **************************************************************************/
 
-	if (b.PieceCount[WHITE][BISHOP] > 1) v.adjustMaterial[WHITE] += e.BISHOP_PAIR;
-	if (b.PieceCount[BLACK][BISHOP] > 1) v.adjustMaterial[BLACK] += e.BISHOP_PAIR;
-	if (b.PieceCount[WHITE][KNIGHT] > 1) v.adjustMaterial[WHITE] -= e.P_KNIGHT_PAIR;
-	if (b.PieceCount[BLACK][KNIGHT] > 1) v.adjustMaterial[BLACK] -= e.P_KNIGHT_PAIR;
-	if (b.PieceCount[WHITE][ROOK] > 1  ) v.adjustMaterial[WHITE] -= e.P_ROOK_PAIR;
-	if (b.PieceCount[BLACK][ROOK] > 1  ) v.adjustMaterial[BLACK] -= e.P_ROOK_PAIR;
+	if (b.piece_cnt[WHITE][BISHOP] > 1) v.adjustMaterial[WHITE] += e.BISHOP_PAIR;
+	if (b.piece_cnt[BLACK][BISHOP] > 1) v.adjustMaterial[BLACK] += e.BISHOP_PAIR;
+	if (b.piece_cnt[WHITE][KNIGHT] > 1) v.adjustMaterial[WHITE] -= e.P_KNIGHT_PAIR;
+	if (b.piece_cnt[BLACK][KNIGHT] > 1) v.adjustMaterial[BLACK] -= e.P_KNIGHT_PAIR;
+	if (b.piece_cnt[WHITE][ROOK] > 1  ) v.adjustMaterial[WHITE] -= e.P_ROOK_PAIR;
+	if (b.piece_cnt[BLACK][ROOK] > 1  ) v.adjustMaterial[BLACK] -= e.P_ROOK_PAIR;
 
-	v.adjustMaterial[WHITE] += n_adj[b.PieceCount[WHITE][PAWN]] * b.PieceCount[WHITE][KNIGHT];
-	v.adjustMaterial[BLACK] += n_adj[b.PieceCount[BLACK][PAWN]] * b.PieceCount[BLACK][KNIGHT];
-	v.adjustMaterial[WHITE] += r_adj[b.PieceCount[WHITE][PAWN]] * b.PieceCount[WHITE][ROOK];
-	v.adjustMaterial[BLACK] += r_adj[b.PieceCount[BLACK][PAWN]] * b.PieceCount[BLACK][ROOK];
+	v.adjustMaterial[WHITE] += n_adj[b.piece_cnt[WHITE][PAWN]] * b.piece_cnt[WHITE][KNIGHT];
+	v.adjustMaterial[BLACK] += n_adj[b.piece_cnt[BLACK][PAWN]] * b.piece_cnt[BLACK][KNIGHT];
+	v.adjustMaterial[WHITE] += r_adj[b.piece_cnt[WHITE][PAWN]] * b.piece_cnt[WHITE][ROOK];
+	v.adjustMaterial[BLACK] += r_adj[b.piece_cnt[BLACK][PAWN]] * b.piece_cnt[BLACK][ROOK];
 
     result += getPawnScore();
 
@@ -194,8 +196,8 @@ int eval( int alpha, int beta, int use_hash ) {
     *  than two attackers or if the attacker has no queen.                    *
     **************************************************************************/
 
-    if (v.attCnt[WHITE] < 2 || b.PieceCount[WHITE][QUEEN] == 0) v.attWeight[WHITE] = 0;
-    if (v.attCnt[BLACK] < 2 || b.PieceCount[BLACK][QUEEN] == 0) v.attWeight[BLACK] = 0;
+    if (v.attCnt[WHITE] < 2 || b.piece_cnt[WHITE][QUEEN] == 0) v.attWeight[WHITE] = 0;
+    if (v.attCnt[BLACK] < 2 || b.piece_cnt[BLACK][QUEEN] == 0) v.attWeight[BLACK] = 0;
     result += SafetyTable[v.attWeight[WHITE]];
     result -= SafetyTable[v.attWeight[BLACK]];
 
@@ -219,25 +221,25 @@ int eval( int alpha, int beta, int use_hash ) {
         weaker = WHITE;
     }
 
-    if (b.PawnMaterial[stronger] == 0) {
+    if (b.pawn_material[stronger] == 0) {
 
-        if (b.PieceMaterial[stronger] < 400) return 0;
+        if (b.piece_material[stronger] < 400) return 0;
 
-        if (b.PawnMaterial[weaker] == 0
-                && (b.PieceMaterial[stronger] == 2 * e.PIECE_VALUE[KNIGHT]))
+        if (b.pawn_material[weaker] == 0
+                && (b.piece_material[stronger] == 2 * e.PIECE_VALUE[KNIGHT]))
             return 0;
 
-        if (b.PieceMaterial[stronger] == e.PIECE_VALUE[ROOK]
-                && b.PieceMaterial[weaker] == e.PIECE_VALUE[BISHOP]) result /= 2;
+        if (b.piece_material[stronger] == e.PIECE_VALUE[ROOK]
+                && b.piece_material[weaker] == e.PIECE_VALUE[BISHOP]) result /= 2;
 
-        if (b.PieceMaterial[stronger] == e.PIECE_VALUE[ROOK]
-                && b.PieceMaterial[weaker] == e.PIECE_VALUE[BISHOP]) result /= 2;
+        if (b.piece_material[stronger] == e.PIECE_VALUE[ROOK]
+                && b.piece_material[weaker] == e.PIECE_VALUE[BISHOP]) result /= 2;
 
-        if (b.PieceMaterial[stronger] == e.PIECE_VALUE[ROOK] + e.PIECE_VALUE[BISHOP]
-                && b.PieceMaterial[stronger] == e.PIECE_VALUE[ROOK]) result /= 2;
+        if (b.piece_material[stronger] == e.PIECE_VALUE[ROOK] + e.PIECE_VALUE[BISHOP]
+                && b.piece_material[stronger] == e.PIECE_VALUE[ROOK]) result /= 2;
 
-        if (b.PieceMaterial[stronger] == e.PIECE_VALUE[ROOK] + e.PIECE_VALUE[KNIGHT]
-                && b.PieceMaterial[stronger] == e.PIECE_VALUE[ROOK]) result /= 2;
+        if (b.piece_material[stronger] == e.PIECE_VALUE[ROOK] + e.PIECE_VALUE[KNIGHT]
+                && b.piece_material[stronger] == e.PIECE_VALUE[ROOK]) result /= 2;
     }
 
     /**************************************************************************
@@ -255,7 +257,6 @@ void EvalKnight(S8 sq, S8 side) {
     int att = 0;
     int mob = 0;
     int pos;
-    v.gamePhase += 1;
 
     /**************************************************************************
     *  Collect data about mobility and king attacks. This resembles move      *
@@ -268,7 +269,7 @@ void EvalKnight(S8 sq, S8 side) {
         if ( IS_SQ(pos) && b.color[pos] != side ) {
 			// we exclude mobility to squares controlled by enemy pawns
             if (!b.pawn_ctrl[!side][pos]) ++mob;
-            if ( e.sqNearK[!side] [b.KingLoc[!side] ] [pos] )
+            if ( e.sqNearK[!side] [b.king_loc[!side] ] [pos] )
                 ++att; // this knight is attacking zone around enemy king
         }
     }
@@ -294,15 +295,15 @@ void EvalKnight(S8 sq, S8 side) {
 	* Evaluate king tropism                                                   *
 	**************************************************************************/
 
-	int tropism = getTropism(sq, b.KingLoc[!side]);
+	int tropism = getTropism(sq, b.king_loc[!side]);
 	v.mgTropism[side] += 3 * tropism;
 	v.egTropism[side] += 3 * tropism;
 }
 
 void EvalBishop(S8 sq, S8 side) {
+
     int att = 0;
     int mob = 0;
-    v.gamePhase += 1;
 
     /**************************************************************************
     *  Collect data about mobility and king attacks                           *
@@ -318,11 +319,11 @@ void EvalBishop(S8 sq, S8 side) {
             if (b.pieces[pos] == PIECE_EMPTY) {
 				if (!b.pawn_ctrl[!side][pos]) mob++;
 				// we exclude mobility to squares controlled by enemy pawns
-                if ( e.sqNearK[!side] [b.KingLoc[!side] ] [pos] ) ++att;
+                if ( e.sqNearK[!side] [b.king_loc[!side] ] [pos] ) ++att;
 			} else {                                // non-empty square
 				if (b.color[pos] != side) {         // opponent's piece
 					mob++;
-					if (e.sqNearK[!side][b.KingLoc[!side]][pos]) ++att;
+					if (e.sqNearK[!side][b.king_loc[!side]][pos]) ++att;
 				}
 				break;                              // own piece
 			}
@@ -337,7 +338,7 @@ void EvalBishop(S8 sq, S8 side) {
         v.attWeight[side] += 2*att;
     }
 
-	int tropism = getTropism(sq, b.KingLoc[!side]);
+	int tropism = getTropism(sq, b.king_loc[!side]);
 	v.mgTropism[side] += 2 * tropism;
 	v.egTropism[side] += 1 * tropism;
 }
@@ -346,24 +347,21 @@ void EvalRook(S8 sq, S8 side) {
     int att = 0;
     int mob = 0;
 
-    v.gamePhase += 2;
-
-   
     /**************************************************************************
     *  Bonus for open and half-open files is merged with mobility score.      *
 	*  Bonus for open files targetting enemy king is added to attWeight[]     *
     /*************************************************************************/
 
-	if (b.PawnsOnFile[side][COL(sq)] == 0) {
-		if (b.PawnsOnFile[!side][COL(sq)] == 0) { // fully open file
+	if (b.pawns_on_file[side][COL(sq)] == 0) {
+		if (b.pawns_on_file[!side][COL(sq)] == 0) { // fully open file
             v.mgMob[side] += e.ROOK_OPEN;
             v.egMob[side] += e.ROOK_OPEN;
-			if (abs(COL(sq) - COL(b.KingLoc[!side])) < 2) 
+			if (abs(COL(sq) - COL(b.king_loc[!side])) < 2) 
 			   v.attWeight[side] += 1;
         } else {                                  // half open file
             v.mgMob[side] += e.ROOK_HALF;
             v.egMob[side] += e.ROOK_HALF;
-			if (abs(COL(sq) - COL(b.KingLoc[!side])) < 2) 
+			if (abs(COL(sq) - COL(b.king_loc[!side])) < 2) 
 			   v.attWeight[side] += 2;
         }
     }
@@ -381,11 +379,11 @@ void EvalRook(S8 sq, S8 side) {
 
             if (b.pieces[pos] == PIECE_EMPTY) {
                 mob++;
-                if ( e.sqNearK[!side] [b.KingLoc[!side] ] [pos] ) ++att;
+                if ( e.sqNearK[!side] [b.king_loc[!side] ] [pos] ) ++att;
 			} else {                                // non-empty square
 				if (b.color[pos] != side) {         // opponent's piece
 					mob++;
-					if (e.sqNearK[!side][b.KingLoc[!side]][pos]) ++att;
+					if (e.sqNearK[!side][b.king_loc[!side]][pos]) ++att;
 				}
 				break;                              // own piece
 			}
@@ -400,13 +398,13 @@ void EvalRook(S8 sq, S8 side) {
         v.attWeight[side] += 3*att;
     }
 
-	int tropism = getTropism(sq, b.KingLoc[!side]);
+	int tropism = getTropism(sq, b.king_loc[!side]);
 	v.mgTropism[side] += 2 * tropism;
 	v.egTropism[side] += 1 * tropism;
 }
 
 void EvalQueen(S8 sq, S8 side) {
-    v.gamePhase += 4;
+
     int att = 0;
     int mob = 0;
 
@@ -434,11 +432,11 @@ void EvalQueen(S8 sq, S8 side) {
 
             if (b.pieces[pos] == PIECE_EMPTY) {
                 mob++;
-                if ( e.sqNearK[!side] [b.KingLoc[!side] ] [pos] ) ++att;
+                if ( e.sqNearK[!side] [b.king_loc[!side] ] [pos] ) ++att;
 			} else {                                 // non-empty square
 				if (b.color[pos] != side) {          // opponent's piece
 					mob++;
-					if (e.sqNearK[!side][b.KingLoc[!side]][pos]) ++att;
+					if (e.sqNearK[!side][b.king_loc[!side]][pos]) ++att;
 				}
 				break;                               // own piece
 			}
@@ -453,7 +451,7 @@ void EvalQueen(S8 sq, S8 side) {
         v.attWeight[side] += 4*att;
     }
 
-	int tropism = getTropism(sq, b.KingLoc[!side]);
+	int tropism = getTropism(sq, b.king_loc[!side]);
 	v.mgTropism[side] += 2 * tropism;
 	v.egTropism[side] += 4 * tropism;
 }
@@ -463,7 +461,7 @@ int wKingShield() {
     int result = 0;
 
     /* king on the kingside */
-    if ( COL(b.KingLoc[WHITE]) > COL_E ) {
+    if ( COL(b.king_loc[WHITE]) > COL_E ) {
 
         if ( isPiece(WHITE, PAWN, F2) )  result += e.SHIELD_2;
         else if ( isPiece(WHITE, PAWN, F3) )  result += e.SHIELD_3;
@@ -476,7 +474,7 @@ int wKingShield() {
     }
 
     /* king on the queenside */
-    else if ( COL(b.KingLoc[WHITE]) < COL_D ) {
+    else if ( COL(b.king_loc[WHITE]) < COL_D ) {
 
         if ( isPiece(WHITE, PAWN, A2) )  result += e.SHIELD_2;
         else if ( isPiece(WHITE, PAWN, A3) )  result += e.SHIELD_3;
@@ -495,7 +493,7 @@ int bKingShield() {
     int result = 0;
 
     /* king on the kingside */
-    if ( COL(b.KingLoc[BLACK]) > COL_E ) {
+    if ( COL(b.king_loc[BLACK]) > COL_E ) {
         if ( isPiece(BLACK, PAWN, F7) )  result += e.SHIELD_2;
         else if ( isPiece(BLACK, PAWN, F6) )  result += e.SHIELD_3;
 
@@ -507,7 +505,7 @@ int bKingShield() {
     }
 
     /* king on the queenside */
-    else if ( COL(b.KingLoc[BLACK]) < COL_D ) {
+    else if ( COL(b.king_loc[BLACK]) < COL_D ) {
         if ( isPiece(BLACK, PAWN, A7) )  result += e.SHIELD_2;
         else if ( isPiece(BLACK, PAWN, A6) )  result += e.SHIELD_3;
 
@@ -763,13 +761,13 @@ int isPiece(U8 color, U8 piece, S8 sq) {
 void printEval() {
     printf("------------------------------------------\n");
     printf("Total value (for side to move): %d \n", eval(-INF,INF, 0) );
-    printf("Material balance       : %d \n", b.PieceMaterial[WHITE] + b.PawnMaterial[WHITE] - b.PieceMaterial[BLACK] - b.PawnMaterial[BLACK] );
+    printf("Material balance       : %d \n", b.piece_material[WHITE] + b.pawn_material[WHITE] - b.piece_material[BLACK] - b.pawn_material[BLACK] );
     printf("Material adjustement   : ");
 	printEvalFactor(v.adjustMaterial[WHITE], v.adjustMaterial[BLACK]);
     printf("Mg Piece/square tables : ");
-    printEvalFactor(b.PcsqMg[WHITE], b.PcsqMg[BLACK]);
+    printEvalFactor(b.pcsq_mg[WHITE], b.pcsq_mg[BLACK]);
     printf("Eg Piece/square tables : ");
-    printEvalFactor(b.PcsqEg[WHITE], b.PcsqEg[BLACK]);
+    printEvalFactor(b.pcsq_eg[WHITE], b.pcsq_eg[BLACK]);
     printf("Mg Mobility            : ");
     printEvalFactor(v.mgMob[WHITE], v.mgMob[BLACK]);
     printf("Eg Mobility            : ");

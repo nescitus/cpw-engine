@@ -28,26 +28,26 @@ void clearBoard() {
 
     // reset perceived values
 
-    b.PieceMaterial[WHITE] = 0;
-    b.PieceMaterial[BLACK] = 0;
-    b.PawnMaterial[WHITE]  = 0;
-    b.PawnMaterial[BLACK]  = 0;
-    b.PcsqMg[WHITE] = 0;
-    b.PcsqMg[BLACK] = 0;
-    b.PcsqEg[WHITE] = 0;
-    b.PcsqEg[BLACK] = 0;
+    b.piece_material[WHITE] = 0;
+    b.piece_material[BLACK] = 0;
+    b.pawn_material[WHITE]  = 0;
+    b.pawn_material[BLACK]  = 0;
+    b.pcsq_mg[WHITE] = 0;
+    b.pcsq_mg[BLACK] = 0;
+    b.pcsq_eg[WHITE] = 0;
+    b.pcsq_eg[BLACK] = 0;
 
 
     // reset counters
 
     for (int i=0; i<6; i++) {
-        b.PieceCount[ WHITE ] [ i ] = 0;
-        b.PieceCount[ BLACK ] [ i ] = 0;
+        b.piece_cnt[ WHITE ] [ i ] = 0;
+        b.piece_cnt[ BLACK ] [ i ] = 0;
     }
 
 	for (int i = 0; i<8; i++) {
-		b.PawnsOnFile[WHITE][i] = 0;
-		b.PawnsOnFile[BLACK][i] = 0;
+		b.pawns_on_file[WHITE][i] = 0;
+		b.pawns_on_file[BLACK][i] = 0;
 	}
 }
 
@@ -65,7 +65,7 @@ void fillSq(U8 color, U8 piece, S8 sq) {
 
     // update king location
     if (piece == KING)
-        b.KingLoc[color] = sq;
+        b.king_loc[color] = sq;
 
 	/**************************************************************************
 	* Pawn structure changes slower than piece position, which allows reusing *
@@ -75,13 +75,13 @@ void fillSq(U8 color, U8 piece, S8 sq) {
 
     if ( piece == PAWN ) {
         // update pawn material
-        b.PawnMaterial[color] += e.PIECE_VALUE[piece];
+        b.pawn_material[color] += e.PIECE_VALUE[piece];
 
         // update pawn hashkey
         b.phash ^= zobrist.piecesquare[piece][color][sq];
 
 		// update counter of pawns on a given file
-		++b.PawnsOnFile[color][COL(sq)];
+		++b.pawns_on_file[color][COL(sq)];
 
 		// update squares controlled by pawns
 		if (color == WHITE) {
@@ -94,15 +94,15 @@ void fillSq(U8 color, U8 piece, S8 sq) {
     }
     else {
         // update piece material
-        b.PieceMaterial[color] += e.PIECE_VALUE[piece];
+        b.piece_material[color] += e.PIECE_VALUE[piece];
     }
 
     // update piece counter
-    b.PieceCount[color][piece]++;
+    b.piece_cnt[color][piece]++;
 
     // update piece-square value
-    b.PcsqMg[color] += e.mgPst[piece][color][sq];
-    b.PcsqEg[color] += e.egPst[piece][color][sq];
+    b.pcsq_mg[color] += e.mgPst[piece][color][sq];
+    b.pcsq_eg[color] += e.egPst[piece][color][sq];
 
     // update hash key
     b.hash ^= zobrist.piecesquare[piece][color][sq];
@@ -129,17 +129,17 @@ void clearSq(S8 sq) {
 			if (IS_SQ(sq + SW)) b.pawn_ctrl[BLACK][sq + SW]--;
 		}
 
-		--b.PawnsOnFile[color][COL(sq)];
-        b.PawnMaterial[color] -= e.PIECE_VALUE[piece];
+		--b.pawns_on_file[color][COL(sq)];
+        b.pawn_material[color] -= e.PIECE_VALUE[piece];
         b.phash ^= zobrist.piecesquare[piece][color][sq];
     }
     else
-        b.PieceMaterial[color] -= e.PIECE_VALUE[piece];
+        b.piece_material[color] -= e.PIECE_VALUE[piece];
 
-    b.PcsqMg[color] -= e.mgPst[piece][color][sq];
-    b.PcsqEg[color] -= e.egPst[piece][color][sq];
+    b.pcsq_mg[color] -= e.mgPst[piece][color][sq];
+    b.pcsq_eg[color] -= e.egPst[piece][color][sq];
 
-    b.PieceCount[color][piece]--;
+    b.piece_cnt[color][piece]--;
 
     b.pieces[sq] = PIECE_EMPTY;
     b.color[sq] = COLOR_EMPTY;

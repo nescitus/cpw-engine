@@ -18,7 +18,7 @@ int is_rim[64] = {
 int isDraw() {
 
     /* no pawns */
-    if (!b.PawnMaterial[WHITE] && !b.PawnMaterial[BLACK] ) {
+    if (!b.pawn_material[WHITE] && !b.pawn_material[BLACK] ) {
 
         /**********************************************************************
 		*  We act only if both sides have at most one minor piece. To  guard  *
@@ -28,10 +28,10 @@ int isDraw() {
 		*  and Km vs Km without kings on the edge.                            *
 		**********************************************************************/
 
-        if ( b.PieceMaterial[WHITE] < 400 
-		&&   b.PieceMaterial[BLACK] < 400 
-		&&   ( !is_rim[b.KingLoc[WHITE] ] || b.PieceMaterial[BLACK] == 0 ) 
-		&&   ( !is_rim[b.KingLoc[BLACK] ] || b.PieceMaterial[WHITE] == 0 )
+        if ( b.piece_material[WHITE] < 400 
+		&&   b.piece_material[BLACK] < 400 
+		&&   ( !is_rim[b.king_loc[WHITE] ] || b.piece_material[BLACK] == 0 ) 
+		&&   ( !is_rim[b.king_loc[BLACK] ] || b.piece_material[WHITE] == 0 )
            )
             return 1;
 

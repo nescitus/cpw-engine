@@ -112,7 +112,7 @@ int search_root( U8 depth, int alpha, int beta ) {
     U8 currmove_legal = 0;
 
     /* Check  extension is done also at  the  root */
-    flagInCheck = isAttacked( !b.stm, b.KingLoc[b.stm] );
+    flagInCheck = isAttacked( !b.stm, b.king_loc[b.stm] );
     if ( flagInCheck ) ++depth;
 
     U8 mcount = movegen(movelist, bestmove);
@@ -129,7 +129,7 @@ int search_root( U8 depth, int alpha, int beta ) {
         move_make( movelist[i] );
 
         // filter out illegal moves
-        if (isAttacked(b.stm, b.KingLoc[!b.stm])) {
+        if (isAttacked(b.stm, b.king_loc[!b.stm])) {
             move_unmake( movelist[i] );
             continue;
         }
@@ -225,7 +225,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
     *  never enter quiescence search while in check.                          *
     **************************************************************************/
 
-    flagInCheck = ( isAttacked( !b.stm, b.KingLoc[b.stm] ) );
+    flagInCheck = ( isAttacked( !b.stm, b.king_loc[b.stm] ) );
     if ( flagInCheck ) ++depth;
 
     /**************************************************************************
@@ -302,7 +302,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
     &&   can_null
     &&  !is_pv
     &&   eval(alpha, beta, 1) > beta
-    &&   b.PieceMaterial[b.stm] > e.ENDGAME_MAT
+    &&   b.piece_material[b.stm] > e.ENDGAME_MAT
     &&  !flagInCheck )
     {
         char ep_old = b.ep;
@@ -359,7 +359,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         move_make(move);
 
         // filter out illegal moves
-        if (isAttacked(b.stm, b.KingLoc[!b.stm])) {
+        if (isAttacked(b.stm, b.king_loc[!b.stm])) {
             move_unmake(move);
             continue;
         }
@@ -375,7 +375,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         &&   legal_move
         &&  !move_iscapt(move)
         &&	!move_isprom(move)
-        &&  !isAttacked( !b.stm, b.KingLoc[b.stm] )  ) {
+        &&  !isAttacked( !b.stm, b.king_loc[b.stm] )  ) {
             move_unmake(move);
             continue;
         }
@@ -397,7 +397,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         && new_depth > 3
         && legal_move
         && moves_tried > 3
-        && !isAttacked(!b.stm, b.KingLoc[b.stm])
+        && !isAttacked(!b.stm, b.king_loc[b.stm])
         && !flagInCheck
         && (move.from != sd.killers[0][ply].from || move.to != sd.killers[0][ply].to)
         && (move.from != sd.killers[1][ply].from || move.to != sd.killers[1][ply].to)
@@ -405,7 +405,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         && !move_isprom(move) ) {
 
             /******************************************************************
-            * Real programs tend use more advanced formulas to calculate      *
+            * Real programs tend to use more advanced formulas to calculate   *
             * reduction depth. Typically they calculate it from both remai-   *
             * ning depth and move count. Formula used here is very basic and  *
             * gives only a minimal improvement over uniform one ply reduction,*
@@ -499,7 +499,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
 
                     if (sd.history[b.stm][move.from][move.to] > SORT_KILL) {
 						for (int cl = 0; cl < 2; cl++)
-                        for (int a = 0; a < 128; a++)
+                          for (int a = 0; a < 128; a++)
                             for (int b = 0; b < 128; b++) {
                                 sd.history[cl][a][b] = sd.history[cl][a][b] / 2;
                             }
@@ -683,7 +683,7 @@ void ageHistoryTable() {
 int contempt() {
     int value = draw_opening;
 
-    if ( b.PieceMaterial[sd.myside] < e.ENDGAME_MAT )
+    if ( b.piece_material[sd.myside] < e.ENDGAME_MAT )
         value = draw_endgame;
 
     if ( b.stm == sd.myside ) return value;

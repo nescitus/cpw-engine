@@ -227,7 +227,7 @@ int move_isprom(smove m) {
 
 int move_canSimplify(smove m) {
     if ( m.piece_cap == PAWN 
-	||   b.PieceMaterial[!b.stm] - e.PIECE_VALUE[m.piece_cap] > e.ENDGAME_MAT )
+	||   b.piece_material[!b.stm] - e.PIECE_VALUE[m.piece_cap] > e.ENDGAME_MAT )
         return 0;
     else
         return 1;
@@ -244,7 +244,7 @@ int move_countLegal() {
         move_make( mlist[i] );
 
         /* ...then increase the counter if it did not leave us in check */
-        if ( !isAttacked( b.stm, b.KingLoc[!b.stm] ) ) ++result;
+        if ( !isAttacked( b.stm, b.king_loc[!b.stm] ) ) ++result;
 
         move_unmake(mlist[i]);
     }
@@ -265,7 +265,7 @@ int move_isLegal(smove m) {
 
             /* test if the move in question leaves us in check */
             move_make( movelist[i] );
-            if ( isAttacked( b.stm, b.KingLoc[!b.stm] ) ) result = 0;
+            if ( isAttacked( b.stm, b.king_loc[!b.stm] ) ) result = 0;
             move_unmake( movelist[i] );
 
             return result;

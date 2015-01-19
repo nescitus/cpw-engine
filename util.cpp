@@ -68,7 +68,7 @@ U64 perft(U8 depth) {
     for (int i = 0; i < mcount; i++) {
         move_make(m[i]);
 
-        if (!isAttacked(b.stm, b.KingLoc[!b.stm]))
+        if (!isAttacked(b.stm, b.king_loc[!b.stm]))
             nodes += perft(depth - 1);
 
         move_unmake(m[i]);
