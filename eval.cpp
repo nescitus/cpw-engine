@@ -347,11 +347,17 @@ void EvalBishop(S8 sq, S8 side) {
 }
 
 void EvalRook(S8 sq, S8 side) {
+
     int att = 0;
     int mob = 0;
 
+	/**************************************************************************
+	*  Bonus for rook on the seventh rank. It is applied when there are pawns *
+	*  to attack along that rank or if enemy king is cut off on 8th rank      *
+	/*************************************************************************/
+
 	if (ROW(sq) == seventh[side]
-		&& (b.pawns_on_rank[!side][seventh[side]] || ROW(b.king_loc[!side]) == eighth[side])) {
+	&& (b.pawns_on_rank[!side][seventh[side]] || ROW(b.king_loc[!side]) == eighth[side])) {
 		v.mgMob[side] += 20;
 		v.egMob[side] += 30;
 	}
@@ -367,7 +373,7 @@ void EvalRook(S8 sq, S8 side) {
             v.egMob[side] += e.ROOK_OPEN;
 			if (abs(COL(sq) - COL(b.king_loc[!side])) < 2) 
 			   v.attWeight[side] += 1;
-        } else {                                  // half open file
+        } else {                                    // half open file
             v.mgMob[side] += e.ROOK_HALF;
             v.egMob[side] += e.ROOK_HALF;
 			if (abs(COL(sq) - COL(b.king_loc[!side])) < 2) 

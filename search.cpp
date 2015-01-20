@@ -324,6 +324,24 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         if (val >= beta) return beta;
     }   // end of null move code
 
+	/**************************************************************************
+	*  RAZORING - if a node is close to the leaf and its static score is low, *
+	*  we drop directly to the quiescence search.                             *
+	**************************************************************************/
+
+	if (!is_pv
+	&&  !flagInCheck
+	&&  tt_move_index == -1
+		&&  can_null
+	//	&&  !(bbPc(p, p->side, P) & bbRelRank[p->side][RANK_7]) // no pawns to promote in one move
+		&& depth <= 3) {
+		int threshold = alpha - 300 - (depth - 1) * 60;
+		if (eval(alpha,beta,1) < threshold) {
+			val = Quiesce(alpha, beta);
+			if (val < threshold) return alpha;
+		}
+	} // end of razoring code
+
     /**************************************************************************
     *  Decide  if FUTILITY PRUNING  is  applicable. If we are not in check,   *
     *  not searching for a checkmate and eval is below (alpha - margin), it   *
