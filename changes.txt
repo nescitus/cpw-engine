@@ -1,3 +1,4 @@
+v. 1.1.13(2005.01.19) : modified rook and queen on 7th rank eval
 v. 1.1.12(2005.01.18) : two-ply late move reduction is triggered earlier
 v. 1.1.11(2005.01.17) : history table takes color into account
 v. 1.1.10(2015.01.15) : bad captures sorted behind ordinary moves

@@ -101,6 +101,7 @@ struct sboard {
     int pawn_material[2];
     U8 piece_cnt[2][6];
 	U8 pawns_on_file[2][8];
+	U8 pawns_on_rank[2][8];
 	U8 pawn_ctrl[2][128];
 };
 extern sboard b;

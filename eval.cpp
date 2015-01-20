@@ -7,10 +7,13 @@
 /******************************************************************************
 *  We want our eval to be color-independent, i.e. the same functions ought to *
 *  be called for white and black pieces. This requires some way of converting *
-*  square coordinates.                                                        *
+*  row and square coordinates.                                                *
 ******************************************************************************/
 
-int inv_sq[128] = {
+static const int seventh[2] = { ROW(A7), ROW(A2) };
+static const int eighth[2]  = { ROW(A8), ROW(A1) };
+
+static const int inv_sq[128] = {
 	    A8, B8, C8, D8, E8, F8, G8, H8, -1, -1, -1, -1, -1, -1, -1, -1,
 		A7, B7, C7, D7, E7, F7, G7, H7, -1, -1, -1, -1, -1, -1, -1, -1,
 		A6, B6, C6, D6, E6, F6, G6, H6, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -347,6 +350,12 @@ void EvalRook(S8 sq, S8 side) {
     int att = 0;
     int mob = 0;
 
+	if (ROW(sq) == seventh[side]
+		&& (b.pawns_on_rank[!side][seventh[side]] || ROW(b.king_loc[!side]) == eighth[side])) {
+		v.mgMob[side] += 20;
+		v.egMob[side] += 30;
+	}
+
     /**************************************************************************
     *  Bonus for open and half-open files is merged with mobility score.      *
 	*  Bonus for open files targetting enemy king is added to attWeight[]     *
@@ -407,6 +416,12 @@ void EvalQueen(S8 sq, S8 side) {
 
     int att = 0;
     int mob = 0;
+
+	if (ROW(sq) == seventh[side]
+		&& (b.pawns_on_rank[!side][seventh[side]] || ROW(b.king_loc[!side]) == eighth[side])) {
+		v.mgMob[side] += 5;
+		v.egMob[side] += 10;
+	}
 
     /**************************************************************************
     *  A queen should not be developed too early                              *

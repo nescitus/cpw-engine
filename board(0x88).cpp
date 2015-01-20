@@ -48,6 +48,8 @@ void clearBoard() {
 	for (int i = 0; i<8; i++) {
 		b.pawns_on_file[WHITE][i] = 0;
 		b.pawns_on_file[BLACK][i] = 0;
+		b.pawns_on_rank[WHITE][i] = 0;
+		b.pawns_on_rank[BLACK][i] = 0;
 	}
 }
 
@@ -80,8 +82,9 @@ void fillSq(U8 color, U8 piece, S8 sq) {
         // update pawn hashkey
         b.phash ^= zobrist.piecesquare[piece][color][sq];
 
-		// update counter of pawns on a given file
+		// update counter of pawns on a given rank and file
 		++b.pawns_on_file[color][COL(sq)];
+		++b.pawns_on_rank[color][ROW(sq)];
 
 		// update squares controlled by pawns
 		if (color == WHITE) {
@@ -130,6 +133,7 @@ void clearSq(S8 sq) {
 		}
 
 		--b.pawns_on_file[color][COL(sq)];
+		--b.pawns_on_rank[color][ROW(sq)];
         b.pawn_material[color] -= e.PIECE_VALUE[piece];
         b.phash ^= zobrist.piecesquare[piece][color][sq];
     }
