@@ -181,7 +181,6 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
     char tt_move_index = (char) -1;
     char tt_flag = TT_ALPHA;
     int  flagInCheck;
-    int  legal_move = 0;
     int  raised_alpha = 0;
     int  f_prune = 0;
     int  reduction_depth = 0;
@@ -332,9 +331,9 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
 	if (!is_pv
 	&&  !flagInCheck
 	&&  tt_move_index == -1
-		&&  can_null
+	&&  can_null
 	//	&&  !(bbPc(p, p->side, P) & bbRelRank[p->side][RANK_7]) // no pawns to promote in one move
-		&& depth <= 3) {
+	&& depth <= 3) {
 		int threshold = alpha - 300 - (depth - 1) * 60;
 		if (eval(alpha,beta,1) < threshold) {
 			val = Quiesce(alpha, beta);
@@ -381,7 +380,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
             move_unmake(move);
             continue;
         }
-        moves_tried++;
+        
 
         /**********************************************************************
         *  When the futility pruning flag is set, prune moves which do not    *
@@ -390,7 +389,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         **********************************************************************/
 
         if ( f_prune
-        &&   legal_move
+		&&   moves_tried
         &&  !move_iscapt(move)
         &&	!move_isprom(move)
         &&  !isAttacked( !b.stm, b.king_loc[b.stm] )  ) {
@@ -398,6 +397,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
             continue;
         }
 
+		moves_tried++;
         reduction_depth   = 0; // this move has not been reduced yet
         new_depth = depth - 1; // decrease depth by one ply
 
@@ -413,7 +413,6 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
 
         if (!is_pv
         && new_depth > 3
-        && legal_move
         && moves_tried > 3
         && !isAttacked(!b.stm, b.king_loc[b.stm])
         && !flagInCheck
@@ -474,16 +473,6 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
         }
 
         move_unmake(move);
-
-        /**********************************************************************
-        *  If the move doesn't return -INF, it means that the King couldn't   *
-        *  be captured immediately. So the move was legal. In this case we    *
-        *  increase the legal_move counter, to look afterwards, whether there *
-        *  were any legal moves on the board at all.                          *
-        **********************************************************************/
-
-        legal_move += ( val != -INF );
-
         if ( time_over ) return 0;
 
         /**********************************************************************
@@ -543,7 +532,7 @@ int Search( U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv ) {
     *  vided by contempt() function.                                          *
     **************************************************************************/
 
-    if ( !legal_move ) {
+    if ( !moves_tried ) {
         bestmove = -1;
 
         if ( flagInCheck ) alpha = -INF + ply;
