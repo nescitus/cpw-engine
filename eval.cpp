@@ -12,6 +12,8 @@
 
 static const int seventh[2] = { ROW(A7), ROW(A2) };
 static const int eighth[2]  = { ROW(A8), ROW(A1) };
+static const int stepFwd[2] = { NORTH, SOUTH };
+static const int stepBck[2] = { SOUTH, NORTH };
 
 static const int inv_sq[128] = {
 	    A8, B8, C8, D8, E8, F8, G8, H8, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -271,7 +273,8 @@ void EvalKnight(S8 sq, S8 side) {
         pos = sq + vector[KNIGHT][dir];
         if ( IS_SQ(pos) && b.color[pos] != side ) {
 			// we exclude mobility to squares controlled by enemy pawns
-            if (!b.pawn_ctrl[!side][pos]) ++mob;
+			// but don't penalize possible captures
+			if (!b.pawn_ctrl[!side][pos]) ++mob;
             if ( e.sqNearK[!side] [b.king_loc[!side] ] [pos] )
                 ++att; // this knight is attacking zone around enemy king
         }
@@ -586,20 +589,7 @@ int EvalPawn(S8 sq, S8 side) {
     int flagIsPassed = 1; // we will be trying to disprove that
     int flagIsWeak = 1;   // we will be trying to disprove that
     int flagIsOpposed = 0;
-    int stepFwd, stepBck;
 	
-	/**************************************************************************
-	*   Set loop direction variables for color-independent eval.              *
-	**************************************************************************/
-
-	if (side == WHITE) {
-		stepFwd = NORTH;
-		stepBck = SOUTH;
-	} else {
-		stepFwd = SOUTH;
-		stepBck = NORTH;
-	}
-
     /**************************************************************************
     *   We have only very basic data structures that do not update informa-   *
     *   tion about pawns incrementally, so we have to calculate everything    *
@@ -610,7 +600,7 @@ int EvalPawn(S8 sq, S8 side) {
 	if (b.pawn_ctrl[!side][sq]) // if a pawn is attacked by a pawn, it is not
 		flagIsPassed = 0;       // passed (not sure if it's the best decision)
 
-	S8 nextSq = sq + stepFwd;
+	S8 nextSq = sq + stepFwd[side];
 
     while (IS_SQ(nextSq)) {
 
@@ -625,7 +615,7 @@ int EvalPawn(S8 sq, S8 side) {
 		if (b.pawn_ctrl[!side][nextSq])
 			flagIsPassed = 0;
 
-        nextSq += stepFwd;
+        nextSq += stepFwd[side];
     }
 
     /**************************************************************************
@@ -633,7 +623,7 @@ int EvalPawn(S8 sq, S8 side) {
     *   Here we can at least break out of it for speed optimization.          *
     **************************************************************************/
 
-    nextSq = sq+stepFwd; // so that a pawn in a duo will not be considered weak
+    nextSq = sq+stepFwd[side]; // so that a pawn in a duo will not be considered weak
 
     while (IS_SQ(nextSq)) {
 
@@ -642,7 +632,7 @@ int EvalPawn(S8 sq, S8 side) {
 			break;
 		}
 
-        nextSq += stepBck;
+        nextSq += stepBck[side];
     }
 
     /**************************************************************************

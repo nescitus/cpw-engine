@@ -1,3 +1,4 @@
+v. 1.1.16(2015.02.01) : more captures are classified as bad
 v. 1.1.15(2015.01.20) : razoring added
 v. 1.1.13(2015.01.19) : modified rook and queen on 7th rank eval
 v. 1.1.12(2015.01.18) : two-ply late move reduction is triggered earlier

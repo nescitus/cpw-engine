@@ -61,22 +61,17 @@ int Quiesce( int alpha, int beta )  {
             continue;
 
         /**********************************************************************
-        *  Cutoffs  misfired, so the move in question can turn out well.      *
-        *  Let us try it, then.                                               *
+        *  Cutoffs  misfired, we have to search the current move              *
         **********************************************************************/
 
         move_make( movelist[i] );
-
         val = -Quiesce( -beta, -alpha );
-
         move_unmake( movelist[i] );
 
         if (time_over) return 0;
 
         if ( val > alpha ) {
-            if( val >= beta )
-                return beta;
-
+            if (val >= beta) return beta;
             alpha = val;
         }
     }
@@ -102,6 +97,14 @@ int badCapture(smove move) {
 	if (b.pawn_ctrl[b.color[move.from] ^ 1][move.to]
 	&& e.PIECE_VALUE[move.piece_cap] + 200 < e.PIECE_VALUE[move.piece_from])
         return 1;
+
+	if (e.PIECE_VALUE[move.piece_cap] + 500 < e.PIECE_VALUE[move.piece_from]) {
+		if (leaperAttack(b.color[move.from] ^ 1, move.to, KNIGHT)) return 1;
+		if (bishAttack(b.color[move.from] ^ 1, move.to, NE)) return 1;
+		if (bishAttack(b.color[move.from] ^ 1, move.to, NW)) return 1;
+		if (bishAttack(b.color[move.from] ^ 1, move.to, SE)) return 1;
+		if (bishAttack(b.color[move.from] ^ 1, move.to, SW)) return 1;
+	}
 
     /* if a capture is not processed, it cannot be considered bad */
     return 0;

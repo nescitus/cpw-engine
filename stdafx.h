@@ -294,7 +294,8 @@ int Blind(smove move);
 int isAttacked(char byColor, S8 sq);
 int leaperAttack( char byColor, S8 sq, char byPiece );
 int straightAttack(char byColor, S8 sq, int vect);
-int diagAttack(int btColor, S8 sq, int vect);
+int diagAttack(int byColor, S8 sq, int vect);
+int bishAttack(int byColor, S8 sq, int vect);
 
 void perft_start(char * command);
 U64 perft(U8 depth);

@@ -79,3 +79,18 @@ int diagAttack(int byColor, S8 sq, int vect) {
     }
     return 0;
 }
+
+int bishAttack(int byColor, S8 sq, int vect) {
+	int nextSq = sq + vect;
+
+	while (IS_SQ(nextSq)) {
+		if (b.color[nextSq] != COLOR_EMPTY) {
+			if (b.color[nextSq] == byColor
+			&&  b.pieces[nextSq] == BISHOP)
+				return 1;
+			return 0;
+		}
+		nextSq = nextSq + vect;
+	}
+	return 0;
+}
