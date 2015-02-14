@@ -192,7 +192,7 @@ bool time_stop_root() {
     */
 
     if ( chronos.flags & FINFINITE ) return 0;
-    if ( chronos.flags & FDEPTH    ) return (sd.depth > chronos.depth);
+    if ( chronos.flags & FDEPTH    ) return (sd.depth/ONE_PLY > chronos.depth);
     if ( chronos.flags & FNODES    ) return (sd.nodes > chronos.nodes);
     if ( chronos.flags & FMOVETIME ) return ((int)(gettime() - sd.starttime) > sd.movetime);
 
@@ -249,7 +249,7 @@ bool time_stop() {
     if (task == TASK_NOTHING) return 1;
 
     if (chronos.flags & FINFINITE) return 0;
-    if (chronos.flags & FDEPTH   ) return (sd.depth > chronos.depth);
+    if (chronos.flags & FDEPTH   ) return (sd.depth/ONE_PLY > chronos.depth);
     if (chronos.flags & FNODES   ) return (sd.nodes > chronos.nodes);
     if (chronos.flags & FMOVETIME) return ((int)(gettime() - sd.starttime) > chronos.movetime );
 

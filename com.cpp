@@ -219,7 +219,7 @@ int com_uci(char * command) {
     if (!strcmp(command, "uci")) {
         mode = PROTO_UCI;
 
-        com_send("id name CPW-Engine 1.1.16");
+        com_send("id name CPW-Engine 1.1.17");
         com_send("id author Computer Chess Wiki");
 
         printf("option name Hash type spin default 64 min 1 max 1024\n");

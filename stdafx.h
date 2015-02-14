@@ -11,6 +11,9 @@
 #define INF 10000
 #define INVALID 32767
 
+#define ONE_PLY 4
+#define MAX_DEPTH 100 * ONE_PLY
+
 
 #define U64 unsigned __int64
 #define U32 unsigned __int32
@@ -126,6 +129,7 @@ struct sSearchDriver {
     int myside;
     U8 depth;
     int history[2][128][128];
+	int cutoff[128][128];
     smove killers[1024] [2];
     U64 nodes;
     S32 movetime;
