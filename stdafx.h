@@ -10,9 +10,7 @@
 
 #define INF 10000
 #define INVALID 32767
-
-#define ONE_PLY 4
-#define MAX_DEPTH 100 * ONE_PLY
+#define MAX_DEPTH 100
 
 
 #define U64 unsigned __int64

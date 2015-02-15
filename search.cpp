@@ -68,18 +68,18 @@ void search_iterate() {
 	int move_count = move_countLegal();
 
 	// do a full-window 1-ply search to get the first estimate of val
-	sd.depth = ONE_PLY;
+	sd.depth = 1;
 	val = search_root(sd.depth, -INF, INF);
 
 	// main loop, increasing deph in steps of 1
 
-	for (sd.depth = 2 * ONE_PLY; sd.depth <= MAX_DEPTH; sd.depth += ONE_PLY) {
+	for (sd.depth = 2; sd.depth <= MAX_DEPTH; sd.depth += 1) {
 
 		// breaking conditions - either expired time
 		// or just one legal reply and position searched to depth 4
 
 		if (time_stop_root() || time_over) break;
-		if (move_count == 1 && sd.depth == 5 * ONE_PLY) break;
+		if (move_count == 1 && sd.depth == 5) break;
 
 		// this function deals with aspiration window
 		val = search_widen(sd.depth, val);
@@ -142,10 +142,10 @@ int search_root(U8 depth, int alpha, int beta) {
 		/* the "if" clause introduces PVS at root */
 
 		if (best == -INF)
-			val = -Search(depth - ONE_PLY, 0, -beta, -alpha, DO_NULL, IS_PV);
+			val = -Search(depth - 1, 0, -beta, -alpha, DO_NULL, IS_PV);
 		else
-			if (-Search(depth - ONE_PLY, 0, -alpha - 1, -alpha, DO_NULL, NO_PV) > alpha)
-				val = -Search(depth - ONE_PLY, 0, -beta, -alpha, DO_NULL, IS_PV);
+			if (-Search(depth - 1, 0, -alpha - 1, -alpha, DO_NULL, NO_PV) > alpha)
+				val = -Search(depth - 1, 0, -beta, -alpha, DO_NULL, IS_PV);
 
 		if (val > best) best = val;
 		move_unmake(movelist[i]);
@@ -225,7 +225,7 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 	**************************************************************************/
 
 	flagInCheck = (isAttacked(!b.stm, b.king_loc[b.stm]));
-	if (flagInCheck) depth += ONE_PLY;
+	if (flagInCheck) depth += 1;
 
 	/**************************************************************************
 	*  At leaf nodes we do quiescence search (captures only) to make sure     *
@@ -233,7 +233,7 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 	*  evaluated.                                                             *
 	**************************************************************************/
 
-	if (depth < ONE_PLY) return Quiesce(alpha, beta);
+	if (depth < 1) return Quiesce(alpha, beta);
 
 	sd.nodes++;
 
@@ -276,14 +276,14 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 	* EVAL PRUNING / STATIC NULL MOVE                                         *
 	**************************************************************************/
 
-	if (depth < 3 * ONE_PLY
+	if (depth < 3
 		&& !is_pv
 		&& !flagInCheck
 		&&  abs(beta - 1) > -INF + 100)
 	{
 		int static_eval = eval(alpha, beta, 1);
 
-		int eval_margin = 120 * (depth / ONE_PLY);
+		int eval_margin = 120 * depth;
 		if (static_eval - eval_margin >= beta)
 			return static_eval - eval_margin;
 	}
@@ -297,7 +297,7 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 	*  in  the endgame because of the risk of zugzwang.                       *
 	**************************************************************************/
 
-	if (depth > 2 * ONE_PLY
+	if (depth > 2
 		&&   can_null
 		&&  !is_pv
 		&&   eval(alpha, beta, 1) > beta
@@ -312,10 +312,10 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 		*  depends on remaining  depth.                                       *
 		**********************************************************************/
 
-		char R = 2 * ONE_PLY;
-		if (depth > 6 * ONE_PLY) R = 3 * ONE_PLY;
+		char R = 2;
+		if (depth > 6) R = 3;
 
-		val = -Search(depth - R - ONE_PLY, ply + 1, -beta, -beta + 1, NO_NULL, NO_PV);
+		val = -Search(depth - R - 1, ply + 1, -beta, -beta + 1, NO_NULL, NO_PV);
 
 		move_unmakeNull(ep_old);
 
@@ -333,8 +333,8 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 		&&  tt_move_index == -1
 		&& can_null
 		//	&&  !(bbPc(p, p->side, P) & bbRelRank[p->side][RANK_7]) // no pawns to promote in one move
-		&& depth <= 3 * ONE_PLY) {
-		int threshold = alpha - 300 - ((depth / ONE_PLY) - 1) * 60;
+		&& depth <= 3) {
+		int threshold = alpha - 300 - (depth - 1) * 60;
 		if (eval(alpha, beta, 1) < threshold) {
 			val = Quiesce(alpha, beta);
 			if (val < threshold) return alpha;
@@ -350,11 +350,11 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 
 	int fmargin[4] = { 0, 200, 300, 500 };
 
-	if (depth <= 3 * ONE_PLY
+	if (depth <= 3
 		&&  !is_pv
 		&&  !flagInCheck
 		&&   abs(alpha) < 9000
-		&& eval(alpha, beta, 1) + fmargin[depth / ONE_PLY] <= alpha)
+		&& eval(alpha, beta, 1) + fmargin[depth] <= alpha)
 		f_prune = 1;
 
 	/**************************************************************************
@@ -400,7 +400,7 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 		sd.cutoff[move.from][move.to] -= 1;
 		moves_tried++;
 		reduction_depth = 0;       // this move has not been reduced yet
-		new_depth = depth - ONE_PLY; // decrease depth by one ply
+		new_depth = depth - 1;     // decrease depth by one ply
 
 		/**********************************************************************
 		*  Late move reduction. Typically a cutoff occurs on trying one of    *
@@ -413,7 +413,7 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 		**********************************************************************/
 
 		if (!is_pv
-			&& new_depth > 3 * ONE_PLY
+			&& new_depth > 3
 			&& moves_tried > 3
 			&& !isAttacked(!b.stm, b.king_loc[b.stm])
 			&& !flagInCheck
@@ -432,8 +432,8 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 			******************************************************************/
 
 			sd.cutoff[move.from][move.to] = 50;
-			reduction_depth = ONE_PLY;
-			if (moves_tried > 6) reduction_depth += ONE_PLY;
+			reduction_depth = 1;
+			if (moves_tried > 6) reduction_depth += 1;
 			new_depth -= reduction_depth;
 		}
 
@@ -502,7 +502,7 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 				if (!move_iscapt(move)
 					&& !move_isprom(move)) {
 					setKillers(movelist[i], ply);
-					sd.history[b.stm][move.from][move.to] += (depth / ONE_PLY)*(depth / ONE_PLY);
+					sd.history[b.stm][move.from][move.to] += depth*depth;
 
 					/**********************************************************
 					*  With super deep search history table would overflow    *
@@ -541,7 +541,7 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 		bestmove = -1;
 
 		if (flagInCheck) alpha = -INF + ply;
-		else               alpha = contempt();
+		else             alpha = contempt();
 	}
 
 	/* tt_save() does not save anything when the search is timed out */
@@ -609,10 +609,8 @@ int info_pv(int val) {
 	}
 	else {
 		//the mating value is returned in moves not plies ( thats why /2+1)
-		if (val > 0)
-			sprintf(score, "mate %d", (INF - val) / 2 + 1);
-		else
-			sprintf(score, "mate %d", -(INF + val) / 2 - 1);
+		if (val > 0) sprintf(score, "mate %d", (INF - val) / 2 + 1);
+		else         sprintf(score, "mate %d", -(INF + val) / 2 - 1);
 	}
 
 	U32 nodes = (U32)sd.nodes;
@@ -621,9 +619,9 @@ int info_pv(int val) {
 	util_pv(pv);
 
 	if (mode == PROTO_NOTHING)
-		sprintf(buffer, " %2d. %9u  %5u %5d %s", (int)sd.depth / ONE_PLY, nodes, time / 10, val, pv);
+		sprintf(buffer, " %2d. %9u  %5u %5d %s", (int)sd.depth, nodes, time / 10, val, pv);
 	else
-		sprintf(buffer, "info depth %d score %s time %u nodes %u nps %u pv %s", (int)sd.depth / ONE_PLY, score, time, nodes, countNps(nodes, time), pv);
+		sprintf(buffer, "info depth %d score %s time %u nodes %u nps %u pv %s", (int)sd.depth, score, time, nodes, countNps(nodes, time), pv);
 
 	com_send(buffer);
 
@@ -639,10 +637,8 @@ int info_pv(int val) {
 unsigned int countNps(unsigned int nodes, unsigned int time) {
 	if (time == 0) return 0;
 
-	if (time > 20000)
-		return nodes / (time / 1000);
-	else
-		return (nodes * 1000) / time;
+	if (time > 20000) return nodes / (time / 1000);
+	else              return (nodes * 1000) / time;
 }
 
 /******************************************************************************
@@ -702,7 +698,7 @@ int contempt() {
 		value = draw_endgame;
 
 	if (b.stm == sd.myside) return value;
-	else                      return -value;
+	else                    return -value;
 }
 
 void CheckInput() {
