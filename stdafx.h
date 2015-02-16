@@ -127,7 +127,7 @@ struct sSearchDriver {
     int myside;
     U8 depth;
     int history[2][128][128];
-	int cutoff[128][128];
+	int cutoff [2][128][128];
     smove killers[1024] [2];
     U64 nodes;
     S32 movetime;

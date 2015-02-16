@@ -117,6 +117,7 @@ int search_root(U8 depth, int alpha, int beta) {
 
 	for (U8 i = 0; i < mcount; i++) {
 
+		int cl = b.stm;
 		movegen_sort(mcount, movelist, i);
 
 		if (movelist[i].piece_cap == KING) {
@@ -132,7 +133,7 @@ int search_root(U8 depth, int alpha, int beta) {
 			continue;
 		}
 
-		sd.cutoff[movelist[i].from][movelist[i].to] -= 1;
+		sd.cutoff[cl] [movelist[i].from][movelist[i].to] -= 1;
 
 		//	if ( mode == PROTO_UCI && depth > 6)
 		//		info_currmove( movelist[i], currmove_legal );
@@ -329,11 +330,11 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 	**************************************************************************/
 
 	if (!is_pv
-		&&  !flagInCheck
-		&&  tt_move_index == -1
-		&& can_null
-		//	&&  !(bbPc(p, p->side, P) & bbRelRank[p->side][RANK_7]) // no pawns to promote in one move
-		&& depth <= 3) {
+	&&  !flagInCheck
+	&&  tt_move_index == -1
+	&& can_null
+	//	&&  !(bbPc(p, p->side, P) & bbRelRank[p->side][RANK_7]) // no pawns to promote in one move
+	&& depth <= 3) {
 		int threshold = alpha - 300 - (depth - 1) * 60;
 		if (eval(alpha, beta, 1) < threshold) {
 			val = Quiesce(alpha, beta);
@@ -351,11 +352,11 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 	int fmargin[4] = { 0, 200, 300, 500 };
 
 	if (depth <= 3
-		&&  !is_pv
-		&&  !flagInCheck
-		&&   abs(alpha) < 9000
-		&& eval(alpha, beta, 1) + fmargin[depth] <= alpha)
-		f_prune = 1;
+	&&  !is_pv
+	&&  !flagInCheck
+	&&   abs(alpha) < 9000
+	&&   eval(alpha, beta, 1) + fmargin[depth] <= alpha)
+		 f_prune = 1;
 
 	/**************************************************************************
 	*  Generate moves, then place special cases higher on the list            *
@@ -371,6 +372,7 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 
 	for (int i = 0; i < mcount; i++) {
 
+		int cl = b.stm;
 		movegen_sort(mcount, movelist, i); // pick the best of untried moves
 		move = movelist[i];
 		move_make(move);
@@ -389,15 +391,15 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 		**********************************************************************/
 
 		if (f_prune
-			&&   moves_tried
-			&&  !move_iscapt(move)
-			&& !move_isprom(move)
-			&& !isAttacked(!b.stm, b.king_loc[b.stm])) {
+		&&   moves_tried
+		&&  !move_iscapt(move)
+		&&  !move_isprom(move)
+		&&  !isAttacked(!b.stm, b.king_loc[b.stm])) {
 			move_unmake(move);
 			continue;
 		}
 
-		sd.cutoff[move.from][move.to] -= 1;
+		sd.cutoff[cl][move.from][move.to] -= 1;
 		moves_tried++;
 		reduction_depth = 0;       // this move has not been reduced yet
 		new_depth = depth - 1;     // decrease depth by one ply
@@ -413,15 +415,15 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 		**********************************************************************/
 
 		if (!is_pv
-			&& new_depth > 3
-			&& moves_tried > 3
-			&& !isAttacked(!b.stm, b.king_loc[b.stm])
-			&& !flagInCheck
-			&& sd.cutoff[move.from][move.to] < 50
-			&& (move.from != sd.killers[0][ply].from || move.to != sd.killers[0][ply].to)
-			&& (move.from != sd.killers[1][ply].from || move.to != sd.killers[1][ply].to)
-			&& !move_iscapt(move)
-			&& !move_isprom(move)) {
+		&& new_depth > 3
+		&& moves_tried > 3
+		&& !isAttacked(!b.stm, b.king_loc[b.stm])
+		&& !flagInCheck
+		&&  sd.cutoff[cl][move.from][move.to] < 50
+		&&  (move.from != sd.killers[0][ply].from || move.to != sd.killers[0][ply].to)
+		&&  (move.from != sd.killers[1][ply].from || move.to != sd.killers[1][ply].to)
+		&& !move_iscapt(move)
+		&& !move_isprom(move)) {
 
 			/******************************************************************
 			* Real programs tend to use more advanced formulas to calculate   *
@@ -431,13 +433,13 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 			* and is included for the sake of completeness only.              *
 			******************************************************************/
 
-			sd.cutoff[move.from][move.to] = 50;
+			sd.cutoff[cl][move.from][move.to] = 50;
 			reduction_depth = 1;
 			if (moves_tried > 6) reduction_depth += 1;
 			new_depth -= reduction_depth;
 		}
 
-	re_search:
+	    re_search:
 
 		/**********************************************************************
 		*  The code below introduces principal variation search. It  means    *
@@ -469,11 +471,11 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 		**********************************************************************/
 
 		if (reduction_depth
-			&& val > alpha) {
+		&&  val > alpha) {
 			new_depth += reduction_depth;
 			reduction_depth = 0;
 			goto re_search;
-		}/**/
+		}
 
 		move_unmake(move);
 		if (time_over) return 0;
@@ -489,7 +491,7 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 		if (val > alpha) {
 
 			bestmove = movelist[i].id;
-			sd.cutoff[move.from][move.to] += 6;
+			sd.cutoff[cl][move.from][move.to] += 6;
 
 			if (val >= beta) {
 
@@ -500,7 +502,7 @@ int Search(U8 depth, U8 ply, int alpha, int beta, int can_null, int is_pv) {
 				**************************************************************/
 
 				if (!move_iscapt(move)
-					&& !move_isprom(move)) {
+				&& !move_isprom(move)) {
 					setKillers(movelist[i], ply);
 					sd.history[b.stm][move.from][move.to] += depth*depth;
 
@@ -558,7 +560,7 @@ void setKillers(smove m, U8 ply) {
 		/* make sure killer moves will be different
 		before saving secondary killer move */
 		if (m.from != sd.killers[ply][0].from
-			|| m.to != sd.killers[ply][0].to)
+		||  m.to   != sd.killers[ply][0].to)
 			sd.killers[ply][1] = sd.killers[ply][0];
 
 		/* save primary killer move */
@@ -570,14 +572,14 @@ void ReorderMoves(smove * m, U8 mcount, U8 ply) {
 
 	for (int j = 0; j<mcount; j++) {
 		if ((m[j].from == sd.killers[ply][1].from)
-			&& (m[j].to == sd.killers[ply][1].to)
-			&& (m[j].score < SORT_KILL - 1)) {
+		&& (m[j].to == sd.killers[ply][1].to)
+		&& (m[j].score < SORT_KILL - 1)) {
 			m[j].score = SORT_KILL - 1;
 		}
 
 		if ((m[j].from == sd.killers[ply][0].from)
-			&& (m[j].to == sd.killers[ply][0].to)
-			&& (m[j].score < SORT_KILL)) {
+		&& (m[j].to == sd.killers[ply][0].to)
+		&& (m[j].score < SORT_KILL)) {
 			m[j].score = SORT_KILL;
 		}
 	}
@@ -666,7 +668,7 @@ void clearHistoryTable() {
 		for (int i = 0; i < 128; i++)
 			for (int j = 0; j < 128; j++) {
 				sd.history[cl][i][j] = 0;
-				sd.cutoff[i][j] = 100;
+				sd.cutoff[cl][i][j] = 100;
 			}
 }
 
@@ -681,7 +683,7 @@ void ageHistoryTable() {
 		for (int i = 0; i < 128; i++)
 			for (int j = 0; j < 128; j++) {
 				sd.history[cl][i][j] = sd.history[cl][i][j] / 8;
-				sd.cutoff[i][j] = 100;
+				sd.cutoff[cl][i][j] = 100;
 			}
 }
 
