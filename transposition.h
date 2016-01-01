@@ -1,3 +1,4 @@
+#include "stdafx.h"
 
 struct szobrist {
     U64 piecesquare[6][2][128];

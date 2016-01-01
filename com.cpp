@@ -2,8 +2,6 @@
 #include "stdafx.h"
 #include "transposition.h"
 
-#include <windows.h>
-
 enum eproto {
     PROTO_NOTHING,
     PROTO_XBOARD,
@@ -12,6 +10,8 @@ enum eproto {
 
 int debug = 0;
 
+#ifndef __linux__
+#include <windows.h>
 int pipe;
 HANDLE hstdin;
 
@@ -56,6 +56,50 @@ int input() {
 
     return 0;
 }
+#else
+#include "sys/time.h"
+#include <sys/types.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <sys/timeb.h>
+#include "sys/select.h"
+int com_init()
+{
+
+}
+
+int input()
+{
+	  fd_set readfds;
+	  struct timeval tv;
+	  FD_ZERO (&readfds);
+	  FD_SET (fileno(stdin), &readfds);
+	  tv.tv_sec=0; tv.tv_usec=0;
+	  int ret=select(16, &readfds, 0, 0, &tv);
+	  if (ret==-1) {
+	#ifndef NDEBUG
+		  switch(errno) {
+		  case EBADF:
+			  printf("Bad file number???\n");
+			  break;
+		  case EINTR:
+			  printf("******************************* Interrupt signal \n");
+			  return 0;	//HACK
+			  break;
+		  case EINVAL:
+			  printf("The timeout argument is invalid; one of the components is negative or too large.\n");
+			  break;
+		  }
+	#else
+		  // in release build just return 0 when select errors out.
+		  return 0;
+	#endif
+	  }
+	  return (FD_ISSET(fileno(stdin), &readfds));
+}
+
+#endif
 
 char string[32767];
 char *getsafe(char *buffer, int count)

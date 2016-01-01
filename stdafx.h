@@ -12,7 +12,16 @@
 #define INVALID 32767
 #define MAX_DEPTH 100
 
-
+#ifdef __linux__
+typedef unsigned char U8;
+typedef char S8;
+typedef unsigned short int U16;
+typedef short int S16;
+typedef unsigned int U32;
+typedef int S32;
+typedef unsigned long long U64;
+typedef long long S64;
+#else
 #define U64 unsigned __int64
 #define U32 unsigned __int32
 #define U16 unsigned __int16
@@ -21,7 +30,7 @@
 #define S32 signed   __int32
 #define S16 signed   __int16
 #define S8  signed   __int8
-
+#endif
 
 /* Move ordering constants */
 
@@ -152,7 +161,7 @@ enum etask {
 	TASK_PONDER
 } extern task;
 
-struct stime {
+struct structtime {
     int time[2];
     int inc[2];
     int movestogo;
