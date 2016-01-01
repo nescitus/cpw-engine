@@ -30,8 +30,8 @@ unsigned int gettime() {
 
     struct timeb timebuffer;
     ftime(&timebuffer);
-
-    return (timebuffer.time * 1000) + timebuffer.millitm;
+    U32 t=10*(timebuffer.time * 1000) + timebuffer.millitm;
+    return t;
 }
 #endif
 
