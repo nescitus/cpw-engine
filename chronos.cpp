@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 
-stime chronos;
+structtime chronos;
 
 extern sSearchDriver sd;
 
@@ -22,11 +22,16 @@ unsigned int gettime() {
 }
 #else
 #include <sys/time.h>
-
+#include <sys/timeb.h>
 unsigned int gettime() {
-    timeval t;
-    gettimeofday(&t, 0);
-    return t.tv_usec;
+//    timeval t;
+//    gettimeofday(&t, 0);
+//    return t.tv_usec;
+
+    struct timeb timebuffer;
+    ftime(&timebuffer);
+    U32 t=10*(timebuffer.time * 1000) + timebuffer.millitm;
+    return t;
 }
 #endif
 
