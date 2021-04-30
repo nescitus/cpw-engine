@@ -238,13 +238,13 @@ int eval( int alpha, int beta, int use_hash ) {
                 && b.piece_material[weaker] == e.PIECE_VALUE[BISHOP]) result /= 2;
 
         if (b.piece_material[stronger] == e.PIECE_VALUE[ROOK]
-                && b.piece_material[weaker] == e.PIECE_VALUE[BISHOP]) result /= 2;
+                && b.piece_material[weaker] == e.PIECE_VALUE[KNIGHT]) result /= 2;
 
         if (b.piece_material[stronger] == e.PIECE_VALUE[ROOK] + e.PIECE_VALUE[BISHOP]
-                && b.piece_material[stronger] == e.PIECE_VALUE[ROOK]) result /= 2;
+                && b.piece_material[weaker] == e.PIECE_VALUE[ROOK]) result /= 2;
 
         if (b.piece_material[stronger] == e.PIECE_VALUE[ROOK] + e.PIECE_VALUE[KNIGHT]
-                && b.piece_material[stronger] == e.PIECE_VALUE[ROOK]) result /= 2;
+                && b.piece_material[weaker] == e.PIECE_VALUE[ROOK]) result /= 2;
     }
 
     /**************************************************************************
